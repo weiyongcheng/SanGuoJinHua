@@ -1,0 +1,8 @@
+[CustomSkin]
+InfoPanelIconDamagePierce=UI\Widgets\Console\Human\infocard-attack-hero.blp
+TargetPointConfirm=war3mapImported\point target.mdx
+[Errors]
+Notsapper=该单位现在不能被作为目标
+[FrameDef]
+DAMAGE_PIERCE=种类： |Cffffcc00英雄|R
+GAMEOVER_VICTORY_MSG=大吉大利！今晚吃鸡！

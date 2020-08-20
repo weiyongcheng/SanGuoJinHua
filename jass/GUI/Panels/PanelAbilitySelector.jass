@@ -1,0 +1,80 @@
+
+/*
+技能面板
+*/
+
+library PanelAbilitySelector requires  PanelAbility, PanelAbilitySelectorItem
+
+globals
+    private boolean show
+
+    private integer SelectorTable   //选择tableview
+    private integer SelectorPanel   //选择面板
+endglobals
+
+
+//道具面页
+function PanelAbilitySelectorInit takes nothing returns nothing
+    //3x1 table view
+    local integer fa
+    local integer fb
+    local integer table
+    local integer i 
+    local real padding_lr = 0.002
+    local real padding_top = 0.026
+    local real padding_bottom = 0.028
+    local real h = 0.158 //table高
+    local real w = 0.178  //table宽
+    set show = false
+    //背景
+    set SelectorPanel = DzCreateFrameByTagName("BACKDROP", "PanelAbilitySelector-Panel", GAME_UI, "BackdropWithBorderTemplate", 0)
+    call DzFrameSetPoint(SelectorPanel, 4, DzGetGameUI(), 4, 0, 0)
+    call DzFrameSetSize(SelectorPanel, w + 2*padding_lr, h + padding_top + padding_bottom )
+    call DzFrameShow(SelectorPanel, false)
+    
+
+    //标题
+    set fa = DzCreateFrameByTagName("TEXT", "PanelAbilitySelector-Titile", SelectorPanel, "TextNoEventTemplate", 0)
+    call DzFrameSetPoint(fa, 1, SelectorPanel, 1, 0., -0.008)
+    call DzFrameSetTextAlignment(fa, 1)
+    call DzFrameSetFont(fa, FONT, 0.014, 0)
+    call DzFrameSetText(fa, "请选择一个技能进行强化")
+
+    //table view
+    set table = CreateTableView(SelectorPanel, 3, 1, w,  h, 0, 0.002, 0., 0.0, 0.008)
+    call DzFrameSetPoint(table, 0, SelectorPanel, 0, padding_lr, -padding_top)
+    set SelectorTable  = table
+
+    //信息集(使用技能面板信息集)
+    call TableViewRegisterDataSet(table, TableViewGetInfoSet(PanelAbilityGetMainTable()))   
+
+    //注册子控件
+    call TableViewRegisterItem(table, PanelAbilitySelectorItem())
+    
+
+
+    debug call MSG("PanelAbilitySelector创建结束")
+endfunction
+
+
+
+//显示队列插入数据项
+function PanelAbilitySelectorInsertItem takes integer item_id returns nothing
+    call TableViewWindowInsetItem(SelectorTable, item_id, -1)
+endfunction
+
+//清空显示队列
+function PanelAbilitySelectorClear takes nothing returns nothing
+    call TableViewWindowRemoveAll(SelectorTable)
+endfunction
+
+//显示隐藏
+function PanelAbilitySelectorShow takes boolean flag returns nothing
+    if show != flag then
+        set show = flag
+        call DzFrameShow(SelectorPanel, flag)
+    endif
+endfunction
+
+endlibrary
+

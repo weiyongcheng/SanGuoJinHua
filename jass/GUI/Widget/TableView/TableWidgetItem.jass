@@ -1,0 +1,16 @@
+library TableWidget initializer init requires UIBase, ButtonWidget, DataList, Tooltip
+
+    globals
+        
+        private integer array UI    //UI信息
+        private trigger evet_trg // 事件触发器
+    endglobals
+
+    function RegisterTableWidgetItem takes integer table, triggercondition callback returns nothing
+        local trigger trig = CreateTrigger()
+        call TriggerAddCondition(trig, callback)
+        set trig = null
+        set callback = null
+    endfunction
+
+endif

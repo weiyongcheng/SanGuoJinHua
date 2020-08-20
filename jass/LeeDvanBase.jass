@@ -1,0 +1,83 @@
+
+
+
+library LeeDvanBase initializer init
+
+globals
+     hashtable HT_Timer
+     hashtable HT_Event
+     private boolean sign //符号
+endglobals
+
+native UnitAlive takes unit u returns boolean//单位存活
+
+
+//符号函数
+function SIGN_INT takes integer value returns integer
+    if(sign) then
+        return value
+    else
+        return -value
+    endif
+endfunction
+function SIGN_REAL takes real value returns real
+    if(sign) then
+        return value
+    else
+        return -value
+    endif
+endfunction
+function SetSign takes boolean b returns nothing
+    set sign=b
+endfunction
+function GetSign takes nothing returns boolean
+    return sign
+endfunction
+
+//调试
+function MSG takes string msg returns nothing
+    debug call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, msg) 
+endfunction
+
+
+private function init takes nothing returns nothing
+    set HT_Timer=InitHashtable()
+    set HT_Event=InitHashtable()
+    set sign=true   //true为正，false为负
+endfunction
+
+
+endlibrary
+/*
+HT_Event 主索引信息
+//--伤害系统
+1 攻击命中
+2 暴击事件
+3 伤害型技能命中
+7 任意单位接受伤害
+4 英雄即将输出AOE
+5 进入战斗
+6 脱离战斗
+8 属性变更(获得、失去属性)
+
+
+//--物品系统
+10 物品合成事件
+11 玩家从屏幕商店购买物品
+12 玩家从屏幕商店出售物品
+
+15 套装取得事件
+16 套装丢失事件
+
+//符文系统
+20 符文数据同步结束
+
+//弹幕系统
+31特效弹幕碰撞
+32特效弹幕结束
+
+35单位弹幕碰撞
+36单位弹幕结束
+
+*/
+

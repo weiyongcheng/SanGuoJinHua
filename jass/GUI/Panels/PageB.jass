@@ -1,0 +1,9 @@
+
+globals
+    private constant integer Pageb = 0x2
+endglobals
+
+//宝物
+private function CreateMainPanelPageB takes nothing returns nothing
+
+endfunction

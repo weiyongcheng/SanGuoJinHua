@@ -1,0 +1,18 @@
+#include "PanelAbility.jass"
+
+#include "PanelAbilitySelectorItem.jass"
+#include "PanelAbilitySelector.jass"
+
+#include "PanelTalent.jass"
+
+#include "PanelSwitch.jass"
+
+<?
+#ifdef IMPORT_SRC
+    #ifndef IMPORT_PANELS_SRC
+        #define IMPORT_PANELS_SRC
+        #include "src\import.lua"
+    #endif
+
+#endif
+?>

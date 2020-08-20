@@ -1,0 +1,1061 @@
+library TableView initializer init requires UIBase, DataList
+globals
+    private hashtable HT_UI
+    private integer array Data_List_ID   //数据集句柄
+    private hashtable HT_Item
+    private hashtable HT_Filter // 过滤器标签
+
+    //全局参数
+    integer TABLEVIEW_ARG_EVENT_ID //事件ID
+    constant integer TABLEVIEW_SUBCONTROL_CREATE  = 0x1    //创建控件
+    constant integer TABLEVIEW_SUBCONTROL_DESTROY  = 0x2    //销毁控件
+    constant integer TABLEVIEW_SUBCONTROL_RESIZE  = 0x3   //大小变化控件
+    constant integer TABLEVIEW_SUBCONTROL_UPDATE  = 0x4    //信息更新
+
+    integer TABLEVIEW_ARG_INFO_ITEM //数据项
+    integer TABLEVIEW_ARG_TRIGGER_WIDGET //触发table widget 句柄
+    integer TABLEVIEW_ARG_TRIGGER_SUBCONTROL //触发的子控件句柄
+    integer TABLEVIEW_RETURN_CONTROL_ID  //返回控件ID
+endglobals
+
+//获得一个可用的索引
+private function getIndex takes nothing returns integer
+    local integer n = 1
+    loop
+        if not LoadBoolean(HT_UI, n, 0) then
+            return n 
+        endif
+        set n = n +1
+    endloop
+    return 0
+endfunction
+
+//绘制TableView, 更新位置信息
+// index: table widget index
+private function resize takes integer index returns nothing
+    local integer row = LoadInteger(HT_UI, index, 6)
+    local integer col = LoadInteger(HT_UI, index, 7)
+
+    local integer table = LoadInteger(HT_UI, index, 0)  //TableView背景
+    local real widget_w = LoadReal(HT_UI, index, 2)    //TableView宽
+    local real widget_h = LoadReal(HT_UI, index, 3)     //TableView高
+    local integer anchor = LoadInteger(HT_UI, index, 12)    //其实锚点
+
+    local real padding_tb = LoadReal(HT_UI, index, 4)   //背景上下填充
+    local real padding_lr = LoadReal(HT_UI, index, 5)   //背景左右填充
+    local real margin_tb = LoadReal(HT_UI, index, 8)   //项上下边距
+    local real margin_lr = LoadReal(HT_UI, index, 9)   //项左右边距
+
+    local real w =  (widget_w - 2*padding_lr) / col -2*margin_lr   //项宽
+    local real h =  (widget_h - 2*padding_tb) / row -2*margin_tb   //项高
+
+    local real x = padding_lr + (widget_w - 2*padding_lr) / col /2  //项起点锚点x
+    local real x_step = w + 2*margin_lr //项锚点x步进值
+    local real y = padding_tb + (widget_h - 2*padding_tb) / row /2  //项起点锚点y
+    local real y_step = h + 2*margin_tb //项锚点y步进值
+
+    local integer fa
+
+    local integer r = 1
+    local integer c = 1
+    local integer i = 1
+
+    if anchor == 2  then
+        set x = widget_w - x
+        set x_step = - x_step
+    elseif anchor == 6   then
+        set y = widget_h - y
+        set y_step = - y_step
+    elseif anchor == 8   then
+        set y = widget_h - y
+        set y_step = - y_step
+        set x = widget_w - x
+        set x_step = - x_step
+    endif
+
+    loop
+        set c = 1
+        loop
+            set fa = LoadInteger(HT_UI, table, i)   //子控件
+            if(fa >0)   then
+                call DzFrameSetSize(fa, w, h)
+                call DzFrameClearAllPoints(fa)
+                call DzFrameSetPoint(fa, 4, table, 0, x + x_step*(c-1), -y - y_step*(r-1))
+            endif
+            set c = c + 1
+            set i = i + 1
+            exitwhen c > col
+        endloop
+        
+
+        set r = r +1
+        exitwhen r > row
+
+    endloop
+
+    call SaveReal(HT_UI, index, 10, w)
+    call SaveReal(HT_UI, index, 11, h)
+endfunction
+
+//更新指定控件数据
+private function update takes integer index, integer frame_id, integer item_id returns nothing
+    local integer table = LoadInteger(HT_UI, index, 0)  //widegt句柄
+    local hashtable info
+    local integer fa
+    local integer n
+    
+    set fa = LoadInteger(HT_UI, table, frame_id)    //控件句柄
+   
+    //检查是否有回调触发器
+    if HaveSavedHandle(HT_UI, index, 1) then
+        //参数
+        set TABLEVIEW_ARG_EVENT_ID = TABLEVIEW_SUBCONTROL_UPDATE   //事件ID-创建
+        set TABLEVIEW_ARG_TRIGGER_WIDGET =  table    //widget 句柄
+        set TABLEVIEW_ARG_INFO_ITEM = item_id    //数据项句柄
+        set TABLEVIEW_ARG_TRIGGER_SUBCONTROL = fa //子控件句柄
+        //调用回调触发器
+        call TriggerEvaluate(LoadTriggerHandle(HT_UI, index, 1))
+    endif
+    //call MSG("update, 控件=" + I2S(frame_id) + ",item_id=" +I2S(item_id))
+
+    set info = DataListGetTable(Data_List_ID[index]) //信息集
+    if item_id <= 0 then    //隐藏
+        //隐藏
+        call DzFrameShow(fa, false)
+        //set n = LoadInteger(HT_Item, table, frame_id)   //当前子控件显示的数据项句柄
+        //if n > 1    then
+            //call SaveInteger(info, n, 1, 0) //清空原数据项的控件数据
+        //endif
+    else
+        call SaveInteger(info, item_id, 1, frame_id)    //储存显示该数据项的控件索引
+        
+        //显示
+        call DzFrameShow(fa, true)
+        
+    endif
+    set info = null
+    call SaveInteger(HT_Item, table, frame_id, item_id)
+endfunction
+
+//更新TableView 所有控件数据
+//  index: table widget index
+private function paint takes integer index returns nothing
+    local integer table = LoadInteger(HT_UI, index, 0)  //widegt句柄
+    local integer sum = LoadInteger(HT_Item, index, 0)  //显示队列长度
+    local integer page = LoadInteger(HT_Item, index, 1) //当前页码
+    local integer max = LoadInteger(HT_UI, index, 6) * LoadInteger(HT_UI, index, 7) //行x列，控件总数
+    local integer i
+    local integer item_id    //数据项句柄
+    //debug call MSG("paint, 显示队列长度=" + I2S(sum))
+
+    set i = 1
+    loop
+        exitwhen i > max
+        set item_id = LoadInteger(HT_Item, index, i + 1 + page*max)    //该位置数据项句柄
+        if LoadInteger(HT_Item, table, i) != item_id    then //控件显示的数据项和即将显示的数据项不同，则更新控件数据
+            call update(index, i, item_id)
+            //call SaveBoolean(HT_Item, index, i, true)
+        endif
+        set i = i + 1
+    endloop
+endfunction
+
+//从当前显示队列中移除
+//  index: table widget index
+//  item_id: 数据项句柄
+private function remove_data_item takes integer index, integer item_id returns nothing
+    local integer table
+    local integer i
+    local integer sum = LoadInteger(HT_Item, index, 0)  //显示队列长度
+    local integer pos
+    //查找数据项位置
+    set i = 1
+    loop
+        exitwhen i > sum
+        if LoadInteger(HT_Item, index, i) == item_id    then
+            exitwhen true
+        endif
+        set i = i + 1
+    endloop
+    if i > sum  then
+        return
+    endif
+
+    //更新位置
+    set pos = i
+    loop
+        exitwhen i >= sum
+        call SaveInteger(HT_Item, index, i, LoadInteger(HT_Item, index, i + 1))
+        //call SaveBoolean(HT_Item, index, i, false)
+        set i = i + 1
+    endloop
+    //call SaveBoolean(HT_Item, index, sum, false)
+    call SaveInteger(HT_Item, index, sum, 0)
+    //call MSG("从显示队列中移除=" + I2S(item_id) + ",pos=" + I2S(pos))
+
+    if sum != pos  then
+        //set table = LoadInteger(HT_UI, index, 0)
+        //call SaveInteger(HT_Item, table, pos, 0)
+    endif
+
+    //显示队列大小
+    set sum = sum -1
+    call SaveInteger(HT_Item, index, 0, sum)
+    //call MSG("显示队列剩余长度=" + I2S(sum))
+endfunction
+
+/*从当前显示队列中插入数据项
+ *pos:插入位置, 负数则从后往前数, 不合法位置则插入到末尾,插入后，新插入的项成在pos位置
+*/
+private function insert_data_item takes integer index, integer item_id, integer pos returns nothing
+    local integer list_id = Data_List_ID[index]
+    local hashtable info //=  DataListGetTable(list_id) //信息集
+    local integer num
+    local integer i 
+    local integer tmp
+
+    set info =  DataListGetTable(list_id) //信息集
+    if LoadInteger(info, item_id, 1) > 0    then    //正在显示, 先移除
+        call remove_data_item(index, item_id)
+        call SaveInteger(info, item_id, 1, 0)
+    endif
+    set info = null
+    set num = LoadInteger(HT_Item, index, 0)   //显示队列长度
+    if pos == 0 then
+        set pos = num
+    elseif pos < 0 then 
+        set pos = num + pos + 1
+    elseif pos > num    then
+        set pos = num
+    endif
+
+    //更新该位置后面的项
+    set i = num
+    loop
+        exitwhen i <= pos
+        set tmp = LoadInteger(HT_Item, index, i + 1)   //该位置信息项句柄
+        call SaveInteger(HT_Item, index, i + 1 + 1, tmp)    //后退一个
+
+        set i = i - 1
+    endloop
+    //插入项
+    call SaveInteger(HT_Item, index, pos + 1 + 1, item_id)  //显示队列储存句柄
+    call SaveInteger(HT_Item, index, 0, num + 1)
+endfunction
+
+//创建项目
+private function createItem takes integer index returns nothing
+    local integer table
+    local integer fa
+    local trigger trig
+    local integer max
+    local integer i
+    //检查回调触发器
+    if not HaveSavedHandle(HT_UI, index, 1) then
+        return
+    endif
+
+    set table = LoadInteger(HT_UI, index, 0)  //TableView句柄
+    set max = LoadInteger(HT_UI, index, 6) * LoadInteger(HT_UI, index, 7) //行x列，项总数
+    set trig = LoadTriggerHandle(HT_UI, index, 1)
+
+    //参数
+    set TABLEVIEW_ARG_EVENT_ID = TABLEVIEW_SUBCONTROL_CREATE   //事件ID-创建
+    set TABLEVIEW_ARG_TRIGGER_WIDGET =  table    //widget 句柄
+
+    set i = 1
+    loop
+        //返回值
+        set TABLEVIEW_RETURN_CONTROL_ID = 0
+        //调用回调触发器
+        call TriggerEvaluate(trig)
+        //返回
+        set fa = TABLEVIEW_RETURN_CONTROL_ID
+        if fa > 0   then
+            call SaveInteger(HT_UI, table, i, fa)
+        endif
+
+        set i = i + 1
+        exitwhen i > max
+    endloop
+    set trig = null
+    call resize(index)
+endfunction
+
+//更新滑块位置
+private function updateSlider takes integer index returns nothing
+    local integer backdrop = LoadInteger(HT_UI, index, 22)
+    local integer thumb
+    local integer sum
+    local integer max
+    local integer page
+    local integer all_page
+    if backdrop == 0   then
+        return
+    endif
+    set max = LoadInteger(HT_UI, index, 6) * LoadInteger(HT_UI, index, 7) //行x列，控件总数
+    set sum = LoadInteger(HT_Item, index, 0)  //显示队列长度
+    if sum <= max   then    //隐藏滑调
+        call DzFrameShow(backdrop, false)
+        call DzFrameSetEnable(LoadInteger(HT_UI, index, 21), false)
+        //call MSG("隐藏滑调")
+        return
+    else
+        call DzFrameShow(backdrop, true)
+        call DzFrameSetEnable(LoadInteger(HT_UI, index, 21), true)
+        //call MSG("显示滑调")
+    endif
+
+    //总页数
+    set all_page = sum / max 
+    if sum - all_page*max >0    then
+        set all_page = all_page + 1
+    endif
+    //当前页
+    set page = LoadInteger(HT_Item, index, 1)
+
+    set thumb = LoadInteger(HT_UI, index, 23)
+    //滑块锚点
+    call DzFrameSetPoint(thumb, 1, backdrop, 1, 0, - I2R(page) / I2R(all_page) * LoadReal(HT_UI, index, 22))
+    //滑块高度
+    call DzFrameSetSize(thumb, LoadReal(HT_UI, index, 21), 1 / I2R(all_page) * LoadReal(HT_UI, index, 22))
+    
+endfunction
+
+//设置显示面页
+// page, 从0开始， 0表示第一页
+private function setPage takes integer index, integer page returns nothing
+    if page <0 then
+        return
+    endif
+   
+    if (LoadInteger(HT_UI, index, 6) * LoadInteger(HT_UI, index, 7)) * page + 1 > LoadInteger(HT_Item, index, 0) then
+        return
+    endif
+    call SaveInteger(HT_Item, index, 1, page)
+    call paint(index)
+    call updateSlider(index)
+   
+endfunction
+
+//滑条-滑动回调-翻页
+private function slider_callback takes nothing returns nothing
+    //DzGetTriggerUIEventFrame()
+    local real value = DzGetWheelDelta()
+    local integer index = LoadInteger(HT_UI, DzGetTriggerUIEventFrame(), 0)  //从控件读取 table 序号
+    if(value>0)    then
+        call setPage(index, LoadInteger(HT_Item, index, 1) - 1)
+        //call BJDebugMsg("--")
+    else
+        call setPage(index, LoadInteger(HT_Item, index, 1) + 1)
+        //call BJDebugMsg("++")
+    endif
+        
+endfunction
+
+
+//创建TableView
+//  parent:父对象
+//  r,c:行列
+//  w,h:宽高
+//  anchor:子控件起始锚点,0-左上,6-左下,2-右上,8-由下
+//  padding_lr,padding_tb:背景左右，上下填充
+//  margin_lr,margin_tb:子控件左右，上下边距
+//  @widget 句柄
+function CreateTableView takes integer parent, integer r, integer c , real w, real h, integer anchor,real padding_tb, real padding_lr, real margin_tb, real margin_lr returns integer
+    local integer fa
+    local integer but
+    local integer sum = LoadInteger(HT_UI, 0, 0) + 1
+    local integer index = getIndex()
+    call SaveBoolean(HT_UI, index, 0, true) //占用索引
+    call SaveInteger(HT_UI, 0, 0, sum) //创建过的widget数量
+
+
+    call SaveInteger(HT_UI, index, 6, r)
+    call SaveInteger(HT_UI, index, 7, c)
+    call SaveReal(HT_UI, index, 2, w)
+    call SaveReal(HT_UI, index, 3, h)
+    call SaveReal(HT_UI, index, 4, padding_tb)
+    call SaveReal(HT_UI, index, 5, padding_lr)
+    call SaveReal(HT_UI, index, 8, margin_tb)
+    call SaveReal(HT_UI, index, 9, margin_lr)
+    call SaveInteger(HT_UI, index, 12, anchor)
+
+    if parent <= 0  then
+        set parent = GAME_UI
+    endif
+
+    //创建背景
+    set fa = DzCreateFrameByTagName("BACKDROP", "TableView", parent, "BackdropTemplate", sum)
+    call DzFrameSetTexture(fa, DEFAULT_ICON, 0)
+    call DzFrameSetSize(fa, w, h)
+    call SaveInteger(HT_UI, index, 0, fa)   //序号->句柄
+    call SaveInteger(HT_UI, fa, 0, index)   //句柄->序号
+
+    //创建背景按钮
+    set but = DzCreateFrameByTagName("BUTTON", "TableView-Button", fa, "ButtonTemplate", sum)
+    call DzFrameSetAllPoints(but, fa)
+    call DzFrameShow(but, false)
+    call SaveInteger(HT_UI, index, 21, but)
+    call SaveInteger(HT_UI, but, 0, index)  //table 序号
+
+    //数据集
+    set Data_List_ID[index] = 0
+
+    //更新大小
+    call resize(index)
+    
+    return fa
+endfunction
+
+
+//注册TableView信息集
+//  table: widget句柄
+//  dataset: 信息集哈希表,如果为null,则会创建新的哈希表
+function TableViewRegisterDataSet takes integer table, hashtable dataset returns nothing
+    local integer index = LoadInteger(HT_UI, table, 0)
+    if table <=0   or index <= 0 then
+        set dataset = null
+        return
+    endif
+    if Data_List_ID[index] != 0  then
+        set dataset = null
+        return
+    endif
+    if dataset == null  then
+        set Data_List_ID[index] = DataListCreate()
+    else
+        set Data_List_ID[index] = DataListGetTableIndex(dataset)
+    endif
+    //call MSG(I2S(Data_List_ID[index]))
+    set dataset = null
+endfunction
+
+//注册TableView 子控件
+function TableViewRegisterItem takes integer table, conditionfunc callback returns nothing
+    local trigger trig
+    local integer index
+    if table <=0    then
+        return
+    endif
+    set index = LoadInteger(HT_UI, table, 0)
+    if index <= 0   then
+        return
+    endif
+    set trig = CreateTrigger()
+    call TriggerAddCondition(trig, callback)
+    call SaveTriggerHandle(HT_UI, index, 1, trig)
+
+    //创建子控件
+    call createItem(index)
+
+    set trig = null
+    set callback = null
+endfunction
+
+
+//获取TableView 整型数据
+//  table: widget句柄
+//  data_index:数据索引
+//  @数据
+function TableViewGetIntData takes integer table, integer data_index returns integer
+    local integer index = LoadInteger(HT_UI, table, 0)
+    if index <=0    then
+        return 0
+    endif
+    return LoadInteger(HT_UI, index, data_index)
+endfunction
+
+//获取TableView 实数型数据
+//  table: widget句柄
+//  data_index:数据索引
+//  @数据
+function TableViewGetRealData takes integer table, integer data_index returns real
+    local integer index = LoadInteger(HT_UI, table, 0)
+    if index <=0    then
+        return 0
+    endif
+    return LoadReal(HT_UI, index, data_index)
+endfunction
+
+
+//获取TableView 子控件句柄
+//  table: widget句柄
+//  control_index:数据索引
+//  @子控件句柄
+function TableViewGetSubControl takes integer table, integer control_index returns integer
+    local integer index = LoadInteger(HT_UI, table, 0)
+    if index <=0    then
+        return 0
+    endif
+    return LoadInteger(HT_UI, table, control_index)
+endfunction
+
+//获取信息集
+//  table: widget句柄
+//  @table widget数据集哈希表
+function TableViewGetInfoSet takes integer table returns hashtable
+    local integer index = LoadInteger(HT_UI, table, 0)
+    if index <=0    then
+        return null
+    endif
+    return DataListGetTable(Data_List_ID[index]) //信息集
+endfunction
+
+
+//添加数据项
+//  table: widget句柄
+//  inset_pos: 插入位置
+//  @数据项句柄
+function TableViewInfoSetAddItem takes integer table , integer insert_pos returns integer
+    local integer index
+    local integer list_id
+    local integer item_id
+    local hashtable info
+    
+    if table <=0    then
+        return 0
+    endif
+    set index = LoadInteger(HT_UI, table, 0)
+    if index <= 0   then
+        return 0
+    endif
+
+    set list_id = Data_List_ID[index]
+    set item_id = DataListCreateItem(list_id, insert_pos)
+    set info = DataListGetTable(list_id) //信息集
+    //初始默认显示
+    call SaveBoolean(info, item_id, 1, true)
+
+    set info = null
+    return item_id
+endfunction
+
+//移除数据项
+//  table: widget句柄
+//  item_id: 数据项句柄
+function TableViewInfoSetRemoveItem takes integer table , integer item_id returns nothing
+    local integer index
+    local integer list_id
+    local hashtable info
+
+    if table <= 0   then
+        return
+    endif
+
+    set index = LoadInteger(HT_UI, table, 0)
+    if index <= 0   then
+        return
+    endif
+    set list_id = Data_List_ID[index]
+    set info =  DataListGetTable(list_id) //信息集
+    //UI更新
+    call remove_data_item(index, item_id)  //从显示队列中移除
+
+    if LoadInteger(info, item_id, 1) > 0    then    //正在显示
+        //销毁
+        call DataListDestroyItem(list_id, item_id)
+        //call MSG("删除=" + I2S(item_id) + "重绘")
+        //重绘
+        call paint(index)
+    else
+        //call MSG("删除=" + I2S(item_id) + "不重绘")
+        //销毁
+        call DataListDestroyItem(list_id, item_id)
+    endif
+
+   
+endfunction
+
+//将数据项移除显示队列
+//  table: widget句柄
+//  item_id: 数据项句柄
+function TableViewWindowRemoveItem takes integer table, integer item_id returns nothing
+    local integer index
+    local integer list_id
+    local hashtable info
+
+    if table <= 0   then
+        return
+    endif
+
+    set index = LoadInteger(HT_UI, table, 0)
+    if index <= 0   then
+        return
+    endif
+
+    set list_id = Data_List_ID[index]
+    set info =  DataListGetTable(list_id) //信息集
+
+    if LoadInteger(info, item_id, 1) > 0    then    //正在显示
+        call remove_data_item(index, item_id)  //从显示队列中移除
+        call SaveInteger(info, item_id, 1, 0)
+        //重绘
+        call paint(index)
+    endif
+    set info = null
+    
+endfunction
+
+//将数据项添加至显示队列
+//  table: widget句柄
+//  item_id: 数据项句柄
+//  pos:插入位置, 负数则从后往前数, 不合法位置则插入到末尾,插入后，新插入的项成在pos位置
+function TableViewWindowInsetItem takes integer table, integer item_id, integer pos returns nothing
+    local integer index
+    if table <= 0   then
+        return
+    endif
+    set index = LoadInteger(HT_UI, table, 0)
+    if index <= 0   then
+        return
+    endif
+    call insert_data_item(index, item_id, pos)
+
+    //重绘
+    call paint(index)
+endfunction
+
+//清空显示队列数据
+function TableViewWindowRemoveAll takes integer table returns nothing
+    local integer index
+    local integer list_id
+    local hashtable info
+
+    if table <= 0   then
+        return
+    endif
+
+    set index = LoadInteger(HT_UI, table, 0)
+    if index <= 0   then
+        return
+    endif
+
+    call FlushChildHashtable(HT_Item, index)
+    call paint(index)
+endfunction
+
+//过滤信息集数据
+//将结果添加到TableView显示项队列中去
+//  table: widget句柄
+// force: 强制重新过滤
+function TableViewDoFilter takes integer table , boolean force_filter returns nothing
+    local integer index = LoadInteger(HT_UI, table, 0)
+    local integer list_id = Data_List_ID[index]
+    local hashtable info
+    local integer sum
+    local integer filter_num
+    local string filter_label
+    local integer data_item_filter_num
+    local integer i
+    local integer j
+    local integer k
+    local integer item_id   //信息项句柄
+    local integer cnt
+    local integer match //匹配次数
+    if index <=0 or list_id < 0  then
+        return
+    endif
+    
+    set filter_num = LoadInteger(HT_Filter, index, 0)   //过滤器数量
+    set info = DataListGetTable(list_id) //信息集
+    if not force_filter    then
+        set force_filter = LoadBoolean(HT_Filter, index, 0)
+    endif
+
+    if  force_filter   then    //重新过滤
+        //重新过滤
+        set sum = LoadInteger(info, 0, 0)   //数据集队列长度
+        set i = 1
+        set cnt = 0
+        loop    //遍历每个数据项
+            exitwhen i > sum
+            set item_id = LoadInteger(info, 0, i)
+            if LoadBoolean(info, item_id, 1)    then    //允许显示
+                set match = 0
+                if filter_num >0   then    //过滤器为0
+                    set j =1
+                    loop    //遍历每个过滤器标签
+                        exitwhen j > filter_num
+                        set data_item_filter_num = LoadInteger(info, item_id, 11)  //数据项过滤器标签数量
+                        
+                        if data_item_filter_num > 0    then
+                            set filter_label = LoadStr(HT_Filter, index, j) //过滤器标签
+                            set k = 1
+                            loop    //遍历每个数据项标签
+                                exitwhen k > data_item_filter_num
+                                if LoadStr(info, item_id, 11 + k) == filter_label   then    //满足匹配
+                                    set match = match + 1
+                                    exitwhen true
+                                endif
+                                set k = k + 1
+                            endloop
+                        else
+                            exitwhen true
+                        endif
+    
+                        set j = j + 1
+                    endloop
+                endif
+    
+                if match >= filter_num  then    //添加
+                    set cnt = cnt + 1
+                    call SaveInteger(HT_Item, index, cnt + 1, item_id)
+                    //debug call MSG("dofilter, 添加至显示队列, 数据项=" + I2S(item_id) + ",位置=" + I2S(cnt))
+                endif
+            endif
+           
+            set i = i + 1
+        endloop
+    else    //在显示队列基础上过滤
+        if filter_num<=0    then
+            set info = null
+            return
+        endif
+        set sum = LoadInteger(HT_Item, index, 0)   //显示队列长度
+        if sum >  0    then
+            set i = 1
+            loop
+                exitwhen i > sum
+                set item_id = LoadInteger(HT_Item, index, 1 + i)
+                if LoadBoolean(info, item_id, 1)    then    //允许显示
+                    set match = 0
+                    set j = 1
+                    loop    //遍历每个过滤器标签
+                        exitwhen j > filter_num
+                        if not LoadBoolean(HT_Filter, index, j) then
+                            set filter_label = LoadStr(HT_Filter, index, j) //过滤器标签
+                            set data_item_filter_num = LoadInteger(info, item_id, 11)  //数据项过滤器标签数量
+                            set k = 1
+                            loop //遍历每个数据项标签
+                                exitwhen k > data_item_filter_num
+                                if LoadStr(info, item_id, 11 + k) == filter_label   then
+                                    set match = match + 1   //匹配一次
+                                    exitwhen true
+                                endif
+                                set k = k + 1
+                            endloop
+                        endif
+                        set j = j + 1
+                    endloop
+                    if match >= filter_num  then
+                        //匹配成功
+                        set cnt = cnt + 1
+                        call SaveInteger(HT_Item, index, cnt + 1, item_id)
+                        //debug call MSG("dofilter, 添加至显示队列, 数据项=" + I2S(item_id) + ",位置=" + I2S(cnt))
+                    endif
+                endif
+                set i = i + 1
+            endloop
+        endif
+
+
+    endif
+    
+    call SaveInteger(HT_Item, index, 0, cnt)
+    set i = 1
+    loop
+        exitwhen i > filter_num
+        call SaveBoolean(HT_Filter, index, i, true)
+        set i = i + 1
+    endloop
+    call SaveBoolean(HT_Filter, index, 0, false)
+    //全部更新
+    call paint(index)
+
+    call updateSlider(index)
+
+    set info = null
+endfunction
+
+//添加一个信息集过滤标签
+//  table:widget句柄
+//  filter_label: 过滤标签
+function TableViewAddFiler takes integer table, string filter_label returns nothing
+    local integer index = LoadInteger(HT_UI, table, 0)
+    local integer i
+    local integer cnt
+    local integer sum
+    if index <=0    then
+        return
+    endif
+    set sum = LoadInteger(HT_Filter, index, 0)  //过滤器数量
+    //检查持否已经有该标签
+    set i = 1
+    loop
+        exitwhen i > sum or  LoadStr(HT_Filter, index, i) == filter_label
+        set i = i + 1
+    endloop
+    if i > sum  then
+            //已经添加该标签
+        return
+    endif
+    set sum = sum + 1
+    call SaveInteger(HT_Filter, index, 0, sum)
+    //添加标签
+    call SaveStr(HT_Filter, index, sum, filter_label)
+    call SaveBoolean(HT_Filter, index, sum, false)  //未过滤
+endfunction
+
+//移除一个信息集过滤标签
+//  table:widget句柄
+//  filter_label: 过滤标签
+function TableViewRemoveFiler takes integer table, string filter_label returns nothing
+    local integer index = LoadInteger(HT_UI, table, 0)
+    local integer i
+    local integer pos
+    local integer sum
+    if index <=0    then
+        return
+    endif
+    set sum = LoadInteger(HT_Filter, index, 0)  //过滤器数量
+    //检查持否已经有该标签
+    set i = 1
+    loop
+        exitwhen i > sum or  LoadStr(HT_Filter, index, i) == filter_label
+        set i = i + 1
+    endloop
+    if i > sum  then
+            //没有该标签
+        return
+    endif
+    //移动队列
+    set pos = i
+    set i = pos
+    loop
+        exitwhen i >= sum
+        call SaveStr(HT_Filter, index, i, LoadStr(HT_Filter, index, i + 1))
+        call SaveBoolean(HT_Filter, index, i, LoadBoolean(HT_Filter, index, i + 1))
+        set i = i + 1
+    endloop
+
+    set sum = sum - 1
+    call SaveInteger(HT_Filter, index, 0, sum)
+    //重新过滤
+    call SaveBoolean(HT_Filter, index, 0, true)
+endfunction
+
+//移除所有过滤器
+//  table:widget句柄
+function TableViewRemoveAllFiler takes integer table returns nothing
+    local integer index = LoadInteger(HT_UI, table, 0)
+    if index <=0    then
+        return
+    endif
+    call FlushChildHashtable(HT_Filter, index)
+    //重新过滤
+    call SaveBoolean(HT_Filter, index, 0, true)
+endfunction
+
+//设置显示面页
+//  table: widget句柄
+//  page:面页, 从1开始
+function TableViewSetPage takes integer table, integer page returns nothing
+    local integer index = LoadInteger(HT_UI, table, 0)
+    if index <=0   or page < 1 then
+        return
+    endif
+    call setPage(index, page - 1)
+    
+endfunction
+
+//设置数据项 字符串数据
+//  table: widget句柄
+//  item_id: 数据项句柄
+//  data_index: 数据索引
+//  value: 数据值
+function TableViewSetDataItemString takes integer table, integer item_id, integer data_index, string value returns nothing
+    local integer index = LoadInteger(HT_UI, table, 0)
+    local integer list_id = Data_List_ID[index]
+    local hashtable info
+    local integer frame_id
+    if list_id <0   or item_id <=0 or data_index <=1 then
+        return
+    endif
+    set info = DataListGetTable(list_id) //信息集
+    call SaveStr(info, item_id, data_index, value)
+    
+    //如果该数据项正在显示，则更新数据
+    set frame_id = LoadInteger(info, item_id, 1)
+    if frame_id > 0    then
+        call update(index, frame_id, item_id)
+    endif
+
+    set info = null
+endfunction
+
+//设置数据项 整数数据
+//  table: widget句柄
+//  item_id: 数据项句柄
+//  data_index: 数据索引
+//  value: 数据值
+function TableViewSetDataItemInteger takes integer table, integer item_id, integer data_index, integer value returns nothing
+    local integer index = LoadInteger(HT_UI, table, 0)
+    local integer list_id = Data_List_ID[index]
+    local hashtable info
+    local integer frame_id
+    if list_id <0   or item_id <=1 or data_index <=1 then
+        return
+    endif
+    set info = DataListGetTable(list_id) //信息集
+    call SaveInteger(info, item_id, data_index, value)
+    
+    //如果该数据项正在显示，则更新数据
+    set frame_id = LoadInteger(info, item_id, 1)
+    if frame_id > 0    then
+        call update(index, frame_id, item_id)
+    endif
+
+    set info = null
+endfunction
+
+
+//设置数据项 启用/禁用
+//  table: widget句柄
+//  item_id: 数据项句柄
+//  enble: 启动
+function TableViewSetDataItemEnble takes integer table, integer item_id, boolean enble returns nothing
+    local integer index = LoadInteger(HT_UI, table, 0)
+    local integer list_id = Data_List_ID[index]
+    local hashtable info
+    local integer frame_id
+    if list_id <0   or item_id <=1  then
+        return
+    endif
+    set info = DataListGetTable(list_id) //信息集
+    call SaveBoolean(info, item_id, 2, enble)
+    
+    //如果该数据项正在显示，则更新数据
+    set frame_id = LoadInteger(info, item_id, 1)
+    if frame_id > 0    then
+        call update(index, frame_id, item_id)
+    endif
+
+    set info = null
+endfunction
+
+
+//设置数据项 显示/隐藏
+//  table: widget句柄
+//  item_id: 数据项句柄
+//  enble: 显示/隐藏
+function TableViewSetDataItemShow takes integer table, integer item_id, boolean enble returns nothing
+    local integer index = LoadInteger(HT_UI, table, 0)
+    local integer list_id = Data_List_ID[index]
+    local hashtable info
+    local integer frame_id
+    if list_id <0   or item_id <=1  then
+        return
+    endif
+    set info = DataListGetTable(list_id) //信息集
+    if LoadBoolean(info, item_id, 1) == enble   then
+        return
+    endif
+
+    call SaveBoolean(info, item_id, 1, enble)
+
+    //UI更新
+    if enble    then
+        //重新过滤
+        call TableViewDoFilter(table, true)
+    else
+        //取消显示
+        call remove_data_item(index, item_id)  //从显示队列中移除
+        if LoadInteger(info, item_id, 1) > 0    then    //正在显示
+            //call MSG("删除=" + I2S(item_id) + "重绘")
+            //重绘
+            call paint(index)
+        endif
+    endif
+    set info = null
+endfunction
+
+
+//重绘指定项目
+//如果项目在显示队列中，则重绘它
+function TableViewUpdateItem takes integer table, integer item_id returns nothing
+    local integer index = LoadInteger(HT_UI, table, 0)
+    local integer list_id = Data_List_ID[index]
+    local hashtable info
+    local integer frame_id
+    if list_id <0   or item_id <1  then
+        return
+    endif
+
+    set info = DataListGetTable(list_id) //信息集
+    //如果该数据项正在显示，则更新数据
+    set frame_id = LoadInteger(info, item_id, 1)
+    if frame_id > 0    then
+        call update(index, frame_id, item_id)
+    endif
+
+    set info = null
+endfunction
+
+
+//创建翻页控件-滑条
+//  table: widget句柄
+//  @滑调背景句柄
+function TableViewCreateSlider takes integer table returns integer
+    local integer backdrop
+    local integer thumb
+    local integer but
+    local integer index = LoadInteger(HT_UI, table, 0)
+    local real w = LoadReal(HT_UI, index, 5)
+    local real h = LoadReal(HT_UI, index, 3) - LoadReal(HT_UI, index, 4) * 2  //高度
+    if index < 1    then
+        return 0
+    endif
+    if w <=0    then
+        set w = 0.006
+    elseif w > 0.01 then
+        set w = 0.01
+    endif
+    call SaveReal(HT_UI, index, 21, w*1.5)  //滑块宽
+    call SaveReal(HT_UI, index, 22, h)  //滑条高
+
+    //创建背景
+    set backdrop = DzCreateFrameByTagName("BACKDROP", "TableView-Slider-Backdrop", table, "TableViewSliderBackdrop", index)
+    call DzFrameSetSize(backdrop, w, h)
+    call DzFrameSetPoint(backdrop, 2, table, 2, -0.001, -LoadReal(HT_UI, index, 4))
+    call DzFrameSetTexture(backdrop, "UI\\Widgets\\Console\\Human\\human-console-button-back-disabled.blp", 0)
+    call DzFrameShow(backdrop, false)
+    call SaveInteger(HT_UI, index, 22, backdrop)
+
+    //滑块
+    set thumb = DzCreateFrameByTagName("BACKDROP", "TableView-Slider-Thumb", backdrop, "TableViewSliderThumb", index)
+    call DzFrameSetSize(thumb, w * 1.5, 0)
+    call DzFrameSetPoint(thumb, 1, backdrop, 1, 0, 0)
+    call DzFrameSetTexture(thumb, "UI\\Widgets\\Console\\Human\\human-console-button-back-active.blp", 0)
+    call SaveInteger(HT_UI, index, 23, thumb)
+
+    //TableView背景按钮
+    set but = LoadInteger(HT_UI, index, 21)
+    call DzFrameSetScriptByCode(but ,6, function slider_callback, false) //滚轮
+    call DzFrameShow(but, true)
+    call DzFrameSetEnable(but, false)
+
+    //更新一次
+    call updateSlider(index)
+    
+    return backdrop
+endfunction
+
+//注册子控件翻页回调
+function TableViewRegisterButtonPageEvent takes integer table, integer but returns nothing
+    local integer index = LoadInteger(HT_UI, table, 0)
+    if index < 1    then
+        return
+    endif
+    call SaveInteger(HT_UI, but, 0, index)  //table 序号
+    call DzFrameSetScriptByCode(but ,6, function slider_callback, false) //滚轮
+endfunction
+
+
+private function init takes nothing returns nothing
+    set HT_UI = InitHashtable()
+    set HT_Item = InitHashtable()
+    set HT_Filter = InitHashtable()
+endfunction
+    
+endlibrary

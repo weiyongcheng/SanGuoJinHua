@@ -1,0 +1,37 @@
+//#define DEBUG
+
+library Main initializer init requires UIFormat
+
+globals
+endglobals
+
+//游戏逝去0秒
+//游戏开始
+private function gameBegin takes nothing returns nothing
+	call DestroyTimer(GetExpiredTimer())
+	//UI初始化
+    call UIFormat()
+
+	#ifdef DEBUG
+	//加载游戏lua脚本
+	call Cheat("exec-lua:main")
+	#endif
+endfunction
+
+private function mapInit takes nothing returns nothing
+	//call SetSkyModel("Environment\\Sky\\LordaeronSummerSky\\LordaeronSummerSky.mdl")
+endfunction
+
+private function init takes nothing returns nothing
+    local timer t = CreateTimer()
+    call TimerStart(t, 0, false, function gameBegin)
+	set t = null
+	
+	call mapInit()
+	#ifdef DEBUG
+	//加载初始脚本
+	call Cheat("exec-lua:lua.base")
+	#endif
+endfunction
+
+endlibrary

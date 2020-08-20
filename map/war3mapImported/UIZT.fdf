@@ -1,0 +1,62 @@
+﻿// -- INCLUDE FILES 引用控件模板文件---------------------------------------------------------
+IncludeFile "UI\FrameDef\Glue\StandardTemplates.fdf",
+
+//******************************
+//*
+//* MAIN MENU BUTTONS
+//*
+//******
+
+Frame "TEXT" "ZT0007" {
+    FrameFont "war3mapImported\zt1.ttf", 0.007, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYTOP,
+    FontFlags "FIXEDSIZE",
+    FontColor 1.0 1.0 1.0 1.0,
+    FontHighlightColor 0.99 0.827 0.0705 1.0,
+    FontDisabledColor 0.2 0.2 0.2 1.0,
+    FontShadowColor 0.0 0.0 0.0 0.9,
+    FontShadowOffset 0.001 -0.001,
+    LayerStyle "IGNORETRACKEVENTS",
+}
+
+Frame "TEXT" "ZT001" {
+    FrameFont "war3mapImported\zt1.ttf", 0.01, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYTOP,
+    FontFlags "FIXEDSIZE",
+    FontColor 1.0 1.0 1.0 1.0,
+    FontHighlightColor 0.99 0.827 0.0705 1.0,
+    FontDisabledColor 0.2 0.2 0.2 1.0,
+    FontShadowColor 0.0 0.0 0.0 0.9,
+    FontShadowOffset 0.001 -0.001,
+    LayerStyle "IGNORETRACKEVENTS",
+}
+
+Frame "TEXT" "ZT0012" {
+    FrameFont "war3mapImported\zt1.ttf", 0.012, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYTOP,
+    FontFlags "FIXEDSIZE",
+    FontColor 1.0 1.0 1.0 1.0,
+    FontHighlightColor 0.99 0.827 0.0705 1.0,
+    FontDisabledColor 0.2 0.2 0.2 1.0,
+    FontShadowColor 0.0 0.0 0.0 0.9,
+    FontShadowOffset 0.001 -0.001,
+    LayerStyle "IGNORETRACKEVENTS",
+}
+
+Frame "TEXT" "ZT0015" {
+    FrameFont "war3mapImported\zt1.ttf", 0.015, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYTOP,
+    FontFlags "FIXEDSIZE",
+    FontColor 1.0 1.0 1.0 1.0,
+    FontHighlightColor 0.99 0.827 0.0705 1.0,
+    FontDisabledColor 0.2 0.2 0.2 1.0,
+    FontShadowColor 0.0 0.0 0.0 0.9,
+    FontShadowOffset 0.001 -0.001,
+    LayerStyle "IGNORETRACKEVENTS",
+}
+
+

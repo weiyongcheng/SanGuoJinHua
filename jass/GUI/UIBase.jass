@@ -1,0 +1,59 @@
+
+//导入资源
+#define IMPORT_SRC
+<?
+#ifdef IMPORT_SRC
+#include "src\import.lua"
+#endif
+?>
+
+#include "BlizzardAPI.j"
+
+library UIBase initializer init requires BzAPI, Hardware
+
+globals
+    hashtable  HT_FrameInfo //用于给frame绑定整数
+    string FONT //  字体路劲
+    string DEFAULT_ICON //默认路标
+    integer GAME_UI
+
+    private real w_rate
+    private real h_rate
+
+endglobals
+
+private function init takes nothing returns nothing
+    //加载外部UI
+    call DzLoadToc( "ui\\ui.toc" )
+
+    set HT_FrameInfo = InitHashtable()
+    set FONT = "ui\\ui.ttf"
+    set DEFAULT_ICON = "ui\\alphatexture.blp"
+    set w_rate = 0.8
+    set h_rate = 0.6
+    //base
+    set GAME_UI = DzCreateFrameByTagName("BACKDROP","GAME_UI" ,DzGetGameUI(),"template", 0)
+endfunction
+
+
+//设置frame大小，输入的是图片格式大小，例如512x512
+function frameSetSize takes integer frame, real width,real height returns nothing
+    call DzFrameSetSize(frame,width / WINDOW_W * w_rate, height / WINDOW_H * h_rate)
+endfunction
+
+endlibrary
+
+///////信息项宏定义
+
+//图标
+#define DATA_ART 0x2
+//名字
+#define DATA_NAME 0x3
+//tooltipA
+#define DATA_TOOLTIP_A 0x4
+//tooltipB
+#define DATA_TOOLTIP_B 0x5
+//tooltipC
+#define DATA_TOOLTIP_C 0x6
+//下标
+#define DATA_SUBSCRIPT 0x7

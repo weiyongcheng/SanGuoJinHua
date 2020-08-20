@@ -1,0 +1,31 @@
+{
+    "Lua.diagnostics.globals": [
+        "ac",
+        "fs",
+        "base",
+        "war3",
+        "PLAYER_NEUTRAL_PASSIVE",
+        "EVENT_PLAYER_UNIT_SPELL_EFFECT",
+        "TriggerRegisterAnyUnitEventBJ",
+        "TriggerRegisterPlayerSelectionEventBJ",
+        "SetPlayerAllianceStateBJ",
+        "bj_ALLIANCE_ALLIED_VISION",
+        "TriggerRegisterUnitEvent",
+        "EVENT_UNIT_DAMAGED",
+        "CountUnitsInGroup",
+        "TriggerRegisterEnterRectSimple",
+        "GetPlayableMapRect",
+        "SelectUnitRemoveForPlayer",
+        "Player",
+        "ConvertUnitState",
+        "UNIT_STATE_MAX_LIFE",
+        "EVENT_PLAYER_UNIT_ATTACKED",
+        "bj_RADTODEG",
+        "SetUnitLifePercentBJ",
+        "SetUnitManaPercentBJ",
+        "GetKillingUnitBJ",
+        "SetUnitAbilityLevelSwapped",
+        "UNIT_STATE_LIFE"
+    ],
+    "terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe"
+}

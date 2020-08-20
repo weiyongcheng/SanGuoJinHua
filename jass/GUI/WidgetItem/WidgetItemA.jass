@@ -1,0 +1,159 @@
+//
+/*
+...................................
+| 图 | 名字
+| 标 | 简易描述             等级标签
+...................................
+*/
+
+
+
+library WidgetItemA requires UIBase, ButtonWidget, TableView, Tooltip
+globals
+    private hashtable HT_UI = null
+    private conditionfunc callback = null
+
+    //宏定义
+    constant  integer WidgetItemA_SUBSCRIPT = 0x7   //下标
+    constant  integer WidgetItemA_LABEL_ART = 0x8   //标签图标
+endglobals
+
+ 
+private function create takes integer parent returns integer
+    local real table_w = TableViewGetRealData(parent, 10)   //子控件w
+    local real table_h = TableViewGetRealData(parent, 11)   //子控件h
+    local integer i = LoadInteger(HT_UI, 0, 0) //创建过的widget数量
+    local integer but
+    local integer fa
+    local integer icon
+    local integer name
+    
+    set i = i + 1
+    call SaveInteger(HT_UI, 0, 0, i)
+    //背景按钮
+    set but = CreateButtonWidgetByTemplate(parent, "WidgetItemAButton")
+    call DzFrameShow(but, false)    //初始隐藏
+
+    //图标
+    set icon = DzCreateFrameByTagName("BACKDROP", "WidgetItemA-Icon", but, "BackdropTemplate", i)
+    call DzFrameSetPoint(icon, 0, but, 0, 0.004, -0.004)
+    call DzFrameSetSize(icon, (table_h - 0.004)* 0.9, (table_h - 0.004)* 0.9)
+    call SaveInteger(HT_UI, but, 2 , icon)
+    //debug call DzFrameSetTexture(icon, "ReplaceableTextures\\CommandButtons\\BTNCloudOfFog.blp", 0)
+
+    //名字
+    set fa = DzCreateFrameByTagName("TEXT", "WidgetItemA-Name", but, "TextNoEventTemplate", i)
+    call DzFrameSetPoint(fa, 0, icon, 2, 0.002, 0.)
+    call DzFrameSetTextAlignment(fa, 3)
+    call DzFrameSetFont(fa, FONT, 0.012, 0)
+    call SaveInteger(HT_UI, but, 3, fa)
+    set name = fa
+    //debug call DzFrameSetText(fa, "致命一击")
+
+    //描述
+    set fa = DzCreateFrameByTagName("TEXT", "WidgetItemA-Tip", but, "TextNoEventTemplate", i)
+    call DzFrameSetTextAlignment(fa, 3)
+    call DzFrameSetFont(fa, FONT, 0.01, 0)
+    call DzFrameSetSize(fa, table_w - (table_h - 0.004)* 0.9 - 0.004 - 0.004, table_h - 0.004 - 0.01)
+    call DzFrameSetPoint(fa, 0, name, 6, 0, -0.0005)
+    call SaveInteger(HT_UI, but, 4, fa)
+    //debug call DzFrameSetText(fa, "该技能有bug，目标允许仅按照玩家1的敌友来判定。")
+
+    //下标
+    set fa = DzCreateFrameByTagName("TEXT", "WidgetItemA-Subscript", but, "WidgetItemASubscript", i)
+    call DzFrameSetTextAlignment(fa, 5)
+    call DzFrameSetFont(fa, FONT, 0.0112, 0)
+    call DzFrameSetPoint(fa, 2, but, 2, -0.006, -0.004)
+    call SaveInteger(HT_UI, but, 5, fa)
+    //debug call DzFrameSetText(fa, "Lv6")
+
+    return but
+endfunction
+
+//更新项目信息
+//  but:即将更新控件句柄
+//  table:控件所属table view 句柄
+//  item_id: 信息项句柄
+private function update takes integer but, integer table, integer item_id returns nothing
+    local hashtable info
+    local integer fa
+    local string str = ""
+
+    if item_id <=1  then
+        return
+    endif
+    
+    set info = TableViewGetInfoSet(table)   //信息集
+    
+    //图标
+    set fa = LoadInteger(HT_UI, but, 2)
+    set str = LoadStr(info, item_id, DATA_ART)
+    if str == null or str == ""    then
+        set str = DEFAULT_ICON
+    endif
+    call DzFrameSetTexture(fa, str, 0)
+
+    //名字
+    set fa = LoadInteger(HT_UI, but, 3)
+    set str = LoadStr(info, item_id, DATA_NAME)
+    call DzFrameSetText(fa, str)
+
+    //描述
+    set fa = LoadInteger(HT_UI, but, 4)
+    set str = LoadStr(info, item_id, DATA_TOOLTIP_A)
+    call DzFrameSetText(fa, str)
+
+    //等级(下标)
+    set fa = LoadInteger(HT_UI, but, 5)
+    set str = LoadStr(info, item_id, DATA_SUBSCRIPT)
+    call DzFrameSetText(fa, str)
+
+    //按钮组-禁用样式
+    if LoadBoolean(info, item_id, 1)    then
+        call ButtonWidgetSetStyle(but, 3)
+    else
+        call ButtonWidgetSetStyle(but, 1)
+    endif    
+
+    set info = null
+endfunction
+
+//控件回调
+private function paint takes nothing returns boolean
+    if TABLEVIEW_ARG_EVENT_ID == TABLEVIEW_SUBCONTROL_UPDATE then
+        //数据更新事件
+        if TABLEVIEW_ARG_TRIGGER_WIDGET> 0 and TABLEVIEW_ARG_TRIGGER_SUBCONTROL >0  then
+            call update(TABLEVIEW_ARG_TRIGGER_SUBCONTROL, TABLEVIEW_ARG_TRIGGER_WIDGET, TABLEVIEW_ARG_INFO_ITEM)
+        endif
+    elseif TABLEVIEW_ARG_EVENT_ID == TABLEVIEW_SUBCONTROL_CREATE    then
+        //创建事件
+        if TABLEVIEW_ARG_TRIGGER_WIDGET >0  then
+            set TABLEVIEW_RETURN_CONTROL_ID = create(TABLEVIEW_ARG_TRIGGER_WIDGET)
+        endif
+    endif
+    return true
+endfunction
+
+
+function WidgetItemA takes nothing returns conditionfunc
+    if HT_UI == null    then
+        set HT_UI = InitHashtable()
+    endif
+    if callback == null    then
+        set callback = Condition(function paint)
+    endif
+    
+    return callback
+endfunction
+    
+endlibrary
+
+<?
+#ifdef IMPORT_SRC
+    #ifndef IMPORT_WIDGETITEM_SRC
+        #define IMPORT_WIDGETITEM_SRC
+        #include "src\import.lua"
+    #endif
+
+#endif
+?>

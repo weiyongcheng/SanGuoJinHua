@@ -1,0 +1,6 @@
+require 'Game.AbilityData.doubleAT'
+require 'Game.AbilityData.Towiceattack'
+require 'Game.AbilityData.publicability.addattackspeed'
+require 'Game.AbilityData.heaveAttack'
+require 'Game.AbilityData.Kill'
+require 'Game.AbilityData.Explore'

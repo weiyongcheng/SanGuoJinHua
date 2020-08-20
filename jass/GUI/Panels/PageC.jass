@@ -1,0 +1,93 @@
+
+globals
+    private constant integer PageC = 0x3
+endglobals
+
+//分类按钮被点击
+//显示该分类下的数据
+private function PageCSortButtonClick takes nothing returns nothing
+    local integer but = DzGetTriggerUIEventFrame()
+    local integer page = PageC
+    local integer table
+    local string str
+    if LoadInteger(HT_UI, page, 4) == but then
+        return
+    endif
+    set table = LoadInteger(HT_UI, page, 1) //table view 句柄
+    call TableViewRemoveAllFiler(table)
+
+    set str = LoadStr(HT_UI, but, 1)
+    if str == null or str == "" then
+    else
+        call TableViewAddFiler(table, str)
+    endif
+    call TableViewDoFilter(table, false)    //过滤一次
+
+    call SaveInteger(HT_UI, page, 4, but)
+endfunction
+
+//道具面页
+private function CreateMainPanelPageC takes nothing returns nothing
+    //5x7 table view
+    //6 个分类按钮
+    local integer page = PageC
+    local integer panel =  MutiPanelGetSubpanel(backdrop, page) //子面页句柄
+    local integer table
+    local integer button_group
+    local real padding_lr = 0.01    //主界面左右填充
+    local real padding_tb = 0.006   //主界面上下填充
+    local real h
+    local real w
+    local real margin = 0.01   //table view 和分类按钮组 边距
+    local integer but
+    local integer item_id
+    //call MSG("PageC-开始")
+    //table view
+    set w = (backdrop_w - 2*padding_lr) * 0.82 - margin / 2
+    set h = backdrop_h - 0.056 - padding_tb
+    set table = CreateTableView(panel, 5, 7, w,  h, 0.004, 0.01, 0.004, 0.004)
+    call DzFrameSetPoint(table, 8, backdrop, 8, -padding_lr, padding_tb)
+    call SaveInteger(HT_UI, page, 1, table) //储存
+    //注册子控件
+    call TableViewRegisterItem(table, WidgetItemAInit())
+
+    //分类按钮组
+    set w = (backdrop_w - 2*padding_lr) * 0.18 - margin / 2
+    set button_group = CreateButtonGroup(panel, 6, 1, w, h, 0.004 , 0.006, 0.008, 0)
+    call DzFrameSetPoint(button_group, 6, backdrop, 6, padding_lr, padding_tb)
+    call SaveInteger(HT_UI, page, 2, button_group) //储存
+    //默认高亮贴图
+    debug call ButtonGroupSetHighlightTexture(button_group, "UI\\Widgets\\Console\\Human\\human-console-button-highlight.blp")
+    
+    //添加分类按钮
+    //1
+    set but = CreateButtonWidget(button_group, true)
+    call ButtonGroupAdd(button_group, but, 1, 1)
+    debug call ButtonWidgetSetBackdrop(but, 1, "UI\\Feedback\\Resources\\recourceonly.blp")    //背景
+    //2
+    set but = CreateButtonWidget(button_group, true)
+    call ButtonGroupAdd(button_group, but, 2, 1)
+    debug call ButtonWidgetSetBackdrop(but, 2, "UI\\Feedback\\Resources\\recourceonly.blp")    //背景
+    //3
+    set but = CreateButtonWidget(button_group, true)
+    call ButtonGroupAdd(button_group, but, 3, 1)
+    debug call ButtonWidgetSetBackdrop(but, 3, "UI\\Feedback\\Resources\\recourceonly.blp")    //背景
+    //4
+    set but = CreateButtonWidget(button_group, true)
+    call ButtonGroupAdd(button_group, but, 4, 1)
+    debug call ButtonWidgetSetBackdrop(but, 4, "UI\\Feedback\\Resources\\recourceonly.blp")    //背景
+    //5
+    set but = CreateButtonWidget(button_group, true)
+    call ButtonGroupAdd(button_group, but, 5, 1)
+    debug call ButtonWidgetSetBackdrop(but, 5, "UI\\Feedback\\Resources\\recourceonly.blp")    //背景
+    //6
+    set but = CreateButtonWidget(button_group, true)
+    call ButtonGroupAdd(button_group, but, 6, 1)
+    debug call ButtonWidgetSetBackdrop(but, 6, "UI\\Feedback\\Resources\\recourceonly.blp")    //背景
+
+    //初始显示分类1
+    call TableViewDoFilter(table, true)
+    call SaveInteger(HT_UI, page, 4, ButtonGroupGetButton(button_group, 1, 1))
+
+    debug call MSG("PageC创建结束")
+endfunction

@@ -1,0 +1,75 @@
+/*
+面板开关按钮
+*/
+
+library PanelSwitch requires PanelAbility, ButtonWidget
+
+globals
+    private integer array switches
+    private integer array panels
+
+    private integer index = 0
+
+endglobals
+
+//每次只显示一个面板
+private function switch takes nothing returns nothing
+    local integer fa = DzGetTriggerUIEventFrame()
+    local integer panel = LoadInteger(HT_FrameInfo, fa, 1)
+    local integer i
+    if panel == 0   then
+        return
+    endif
+    if LoadBoolean(HT_FrameInfo, panel, 1) then
+        call SaveBoolean(HT_FrameInfo, panel, 1, false)
+        call DzFrameShow(panel, false)
+    else
+        set i = 0
+        loop
+            call SaveBoolean(HT_FrameInfo, panels[i], 1, false)
+            call DzFrameShow(panels[i], false)
+            set i = i + 1
+            exitwhen i > index
+        endloop
+
+        call SaveBoolean(HT_FrameInfo, panel, 1, true)
+        call DzFrameShow(panel, true)
+    endif
+endfunction
+
+//初始化面板开关
+function PanelSwitchInit takes nothing returns nothing
+    local integer fa
+    local integer last_frame
+    local real w = 0.03
+    local real h = 0.03
+    set index = 0
+    //技能
+    set fa = CreateButtonWidget(GAME_UI, true)
+    call ButtonWidgetSetBackdrop(fa, 1, "ReplaceableTextures\\PassiveButtons\\PASBTNStatUp.blp")
+    call ButtonWidgetSetBackdrop(fa, 2, "ReplaceableTextures\\PassiveButtons\\PASBTNStatUp.blp")
+    call ButtonWidgetSetBackdrop(fa, 4, DEFAULT_ICON)
+    call DzFrameSetPoint(fa, 0, DzGetGameUI(), 3, 0.004, 0.)
+    call DzFrameSetSize(fa, w, h)
+    call DzFrameSetScriptByCode(fa, 1, function switch, false)
+    set switches[index] = fa
+    set panels[index] = PanelAbilityGetMainPanel()
+    call SaveInteger(HT_FrameInfo, fa, 1, panels[index])
+    set last_frame = fa
+
+    //天赋
+    set index = index + 1
+    set fa = CreateButtonWidget(GAME_UI, true)
+    call ButtonWidgetSetBackdrop(fa, 1, "ReplaceableTextures\\CommandButtons\\BTNInvisibility.blp")
+    call ButtonWidgetSetBackdrop(fa, 2, "ReplaceableTextures\\CommandButtons\\BTNInvisibility.blp")
+    call ButtonWidgetSetBackdrop(fa, 4, DEFAULT_ICON)
+    call DzFrameSetPoint(fa, 0, last_frame, 6, 0., -0.004)
+    call DzFrameSetSize(fa, w, h)
+    call DzFrameSetScriptByCode(fa, 1, function switch, false)
+    set switches[index] = fa
+    set panels[index] = PanelTalentGetMainPanel()
+    call SaveInteger(HT_FrameInfo, fa, 1, panels[index])
+    set last_frame = fa
+endfunction
+
+endlibrary

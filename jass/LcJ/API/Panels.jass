@@ -1,0 +1,36 @@
+
+globals
+    trigger Trg_Call_PanelsUI
+endglobals
+
+private function Call_PanelsUI takes nothing returns boolean
+    local integer ret
+    if not test() then
+        return false
+    endif
+
+    //PanelAbilitySelector
+    if call_index == 1  then
+        call PanelAbilitySelectorInsertItem(popInt())
+
+    elseif call_index == 2  then
+        call PanelAbilitySelectorClear()
+
+    elseif call_index == 3  then
+        call PanelAbilitySelectorShow(popB())
+
+    elseif call_index == 4  then
+        set ret = PanelTalentGetMainTable()
+        call pushInt(ret)
+
+    elseif call_index == 5  then
+        set ret = PanelAbilityGetMainTable()
+        call pushInt(ret)
+    endif
+    return false
+endfunction
+
+private function PanelsUI takes nothing returns nothing
+    set Trg_Call_PanelsUI = CreateTrigger()
+    call TriggerAddCondition(Trg_Call_PanelsUI, Condition(function Call_PanelsUI))
+endfunction

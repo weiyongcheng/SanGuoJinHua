@@ -1,0 +1,190 @@
+library MultiPanel initializer init requires UIBase, ButtonGroup, ButtonWidget
+
+globals
+    private hashtable HT_UI
+endglobals
+
+//获得一个可用的索引
+private function getIndex takes nothing returns integer
+    local integer n = 1
+    loop
+        if not LoadBoolean(HT_UI, n, 0) then
+            return n 
+        endif
+        set n = n +1
+    endloop
+    return 0
+endfunction
+
+//导航按钮点击回调
+private function guideButtonClick takes nothing returns nothing
+    local integer but = DzGetTriggerUIEventFrame()
+    local integer index = LoadInteger(HT_UI, but, 0)
+    local integer panel = LoadInteger(HT_UI, index, 0)
+    local integer n //当前显示
+    local integer m //即将显示
+    if index <= 0 or panel <= 0 then
+        return
+    endif
+    //call MSG("点击")
+    set n = LoadInteger(HT_UI, index, 1)
+    set m = LoadInteger(HT_UI, but, 1)
+    if n == m   then
+        return
+    endif
+    if n > 0 then
+        call DzFrameShow(LoadInteger(HT_UI, panel, 10 + n), false)
+    endif
+    call DzFrameShow(LoadInteger(HT_UI, panel, 10 + m), true)
+    call SaveInteger(HT_UI, index, 1, m)
+endfunction
+
+
+private function init takes nothing returns nothing
+    set HT_UI = InitHashtable()
+endfunction
+
+//创建多面板
+//  w:宽
+//  h:高
+//  subpanel_num:子面页数量
+//  @多面板句柄:backdrop handle
+function CreateMultiPanel takes real w, real h , integer subpanel_num returns integer
+    //local real w = 0.52
+    //local real h = 0.44
+    local integer but
+    local integer fa
+    local integer backdrop
+    local integer n
+    local integer sum 
+    local integer index
+    if subpanel_num <= 0    then
+        return 0
+    endif
+
+    set sum = LoadInteger(HT_UI, 0, 0) + 1
+    set index = getIndex()
+
+    call SaveBoolean(HT_UI, index, 0, true) //占用索引
+    call SaveInteger(HT_UI, 0, 0, sum) //创建过的widget数量
+
+    call SaveReal(HT_UI, index, 2, w)
+    call SaveReal(HT_UI, index, 3, h)
+
+    //创建主背景
+    set backdrop = DzCreateFrameByTagName("BACKDROP", "MultiPanel", GAME_UI, "BackdropTemplate", sum)
+    call DzFrameSetTexture(backdrop, "UI\\Widgets\\EscMenu\\Human\\human-options-menu-background.blp", 0)
+    call DzFrameSetSize(backdrop, w, h)
+
+    call SaveInteger(HT_UI, index, 0, backdrop)   //索引->句柄
+    call SaveInteger(HT_UI, backdrop, 0, index)   //句柄->索引
+    call SaveInteger(HT_UI, backdrop, 2, subpanel_num)  //字面页数量
+
+    //子面页
+    set n = 1
+    loop
+        set fa = DzCreateFrameByTagName("BACKDROP", "MultiPanelSubpanel" + I2S(n), backdrop, "BackdropTemplate", sum)
+        call DzFrameSetPoint(fa, 4, backdrop, 4, 0, 0.)
+        call DzFrameShow(fa, false)
+        call SaveInteger(HT_UI, backdrop, 10 + n, fa)
+        set n = n + 1
+        exitwhen n > 6
+    endloop
+    //初始显示第一个子面页
+    set n = 1
+    set fa = LoadInteger(HT_UI, backdrop, 10 + n)
+    call DzFrameShow(fa, true)
+    call SaveInteger(HT_UI, index, 1, n)
+
+    return backdrop
+endfunction
+
+//创建多面板导航条
+//  panel: multipanel 句柄
+//  w:宽
+//  h:高
+// row_first:行优先
+//  padding_tb/padding_lr: 按钮组上下/左右填充
+//  margin_tb/margin_lr: 按钮上下/左右边距
+//  @导航条句柄
+function MultiPanelCreateGuideBar takes integer panel, real w, real h , boolean row_first,real padding_tb, real padding_lr, real margin_tb, real margin_lr returns integer
+    local integer panel_index = LoadInteger(HT_UI, panel, 0)
+    local integer subpanel_num
+    local integer button_group
+    local integer but
+    local integer n
+    if panel_index <= 0 then
+        return 0
+    endif
+    set subpanel_num = LoadInteger(HT_UI, panel, 2)
+    if subpanel_num <=  0   then
+        return 0
+    endif
+
+    if row_first    then
+        set button_group = CreateButtonGroup(panel, 1, subpanel_num, w, h, padding_tb , padding_lr, margin_tb, margin_lr)
+    else
+        set button_group = CreateButtonGroup(panel, subpanel_num, 1, w, h, padding_tb , padding_lr, margin_tb, margin_lr)
+    endif
+    //call DzFrameSetPoint(button_group, 1, panel, 1, 0, -h*0.1)
+
+    set n = 1
+    loop
+        set but = CreateButtonWidget(button_group, true)
+        call ButtonGroupAdd(button_group, but, 1, n) //由于只有一行或一列，行列颠倒此处不影响
+        call SaveInteger(HT_UI, panel_index, 10 + n, but)
+
+        call SaveInteger(HT_UI,but, 0, panel_index) //所属multipanel
+        call SaveInteger(HT_UI,but, 1, n)   //指向的面页
+
+        call DzFrameSetScriptByCode(but, 1, function guideButtonClick, false)   //点击
+        set n = n + 1
+        exitwhen n > subpanel_num
+    endloop
+
+    return button_group
+endfunction
+
+//获取导航条
+//  panel: multipanel 句柄
+//  @导航条句柄, button group
+function MutiPanelGetGuideBar takes integer panel returns integer
+    local integer panel_index = LoadInteger(HT_UI, panel, 0)
+    if panel_index <= 0 then
+        return 0
+    endif
+    return LoadInteger(HT_UI, panel, 1)
+endfunction
+
+//获取导航按钮
+//  panel: multipanel 句柄
+// button_index: 导航按钮索引
+//  @导航按钮句柄, button widget
+function MutiPanelGetGuideButton takes integer panel, integer button_index returns integer
+    local integer panel_index = LoadInteger(HT_UI, panel, 0)
+    if panel_index <= 0 then
+        return 0
+    endif
+    return LoadInteger(HT_UI, panel_index, 10 + button_index)
+endfunction
+
+//获取子面页句柄
+//  panel: multipanel 句柄
+// page_index: 子面页索引
+//  @子面页句柄,backdrop 句柄
+function MutiPanelGetSubpanel takes integer panel, integer page_index returns integer
+    local integer panel_index = LoadInteger(HT_UI, panel, 0)
+    if panel_index <= 0 then
+        return 0
+    endif
+    return LoadInteger(HT_UI, panel, 10 + page_index)
+endfunction
+
+
+endlibrary
+
+<?
+#ifdef IMPORT_SRC
+    #include "src\import.lua"
+#endif
+?>

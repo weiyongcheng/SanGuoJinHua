@@ -1,0 +1,18 @@
+#include "UIBase.jass"
+
+#include "Hardware.jass"
+
+#include "Widget\config.jass"
+
+#include "WidgetItem\config.jass"
+
+#include "Panels\config.jass"
+
+
+#include "UIFormat.jass"
+
+//#include "WidgetItem\WidgetItemA.jass"
+//#include "WidgetItem\WidgetItemB.jass"
+//#include "MainPanel\MainPanel.jass"
+
+

@@ -1,0 +1,37 @@
+IncludeFile "UI\template.fdf",
+
+
+//面板按钮组
+Frame "BUTTON" "PanelButtonGroup" {
+
+    ControlStyle "AUTOTRACK|HIGHLIGHTONMOUSEOVER",
+
+    ControlBackdrop "PanelButtonGroupBackdrop",
+    Frame "BACKDROP" "PanelButtonGroupBackdrop"{
+	BackdropBackground  "ui\alphatexture.blp",
+	BackdropEdgeFile  "ui\alphatexture.blp",
+	BackdropBlendAll,
+    }
+    
+    ControlPushedBackdrop "PanelButtonGroupPushedBackdrop",
+    Frame "BACKDROP" "PanelButtonGroupPushedBackdrop"  {
+	BackdropBackground  "ui\alphatexture.blp",
+	BackdropEdgeFile  "ui\alphatexture.blp",
+	BackdropBlendAll,
+    }
+
+    ControlDisabledBackdrop "PanelButtonGroupDisabledBackdrop",
+    Frame "BACKDROP" "PanelButtonGroupDisabledBackdrop"  {
+        BackdropBackground  "ui\alphatexture.blp",
+        //BackdropEdgeFile  "ui\alphatexture.blp",
+        BackdropBlendAll,
+    }
+
+    ControlMouseOverHighlight "ButtonMouseOverHighlightTemplate",
+    Frame "HIGHLIGHT" "ButtonMouseOverHighlightTemplate" {
+	HighlightType "FILETEXTURE",
+	HighlightAlphaFile "ui\PanelButtonGroup-Highlight.blp",       
+    HighlightAlphaMode "ADD",
+  
+    }
+}

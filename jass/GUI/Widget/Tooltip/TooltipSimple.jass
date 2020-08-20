@@ -1,0 +1,112 @@
+library TooltipSimple initializer init requires UIBase
+    globals
+        private integer name    //名字
+        private integer tipA 
+    
+        private integer backdrop    //背景
+        private hashtable HT    //储存文本信息
+        private boolean FLAG    //全局控制
+    endglobals
+    
+    private function init takes nothing returns nothing
+        set HT = InitHashtable()
+        set FLAG = false
+    endfunction
+    
+    
+    private function Display takes nothing returns nothing
+        local integer frame = DzGetTriggerUIEventFrame()
+        local string str
+        if(not FLAG or not LoadBoolean(HT,frame,0)) then
+            return
+        endif
+        call DzFrameSetText( name, LoadStr(HT,frame,DATA_NAME) )
+       
+        call DzFrameSetText( tipA, LoadStr(HT,frame,DATA_TOOLTIP_A) )
+     
+        call DzFrameClearAllPoints(tipA)
+        call DzFrameSetPoint(tipA, 6, frame, 4, LoadReal(HT, frame, 8), LoadReal(HT, frame, 9))
+        call DzFrameShow( backdrop, true )
+    endfunction
+    
+    private function Hide takes nothing returns nothing
+        if not FLAG then
+            return
+        endif
+        call DzFrameShow(backdrop, false )
+    endfunction
+    
+    
+    //初始化鼠标描述
+    function TooltipSimpleInit takes nothing returns nothing
+        local real w = 0.18
+        local real padding_tb = 0.006
+        local real padding_lr = 0.008
+        local real textW = w - 2* padding_tb //0.184
+        
+    
+        //背景
+        set backdrop = DzCreateFrameByTagName("BACKDROP", "TooltipSimpleBackdrop" , GAME_UI, "TooltipBackrop", 0)
+        call DzFrameSetSize(backdrop, w, 0.)
+        call DzFrameShow( backdrop, false )
+    
+        //基本描述
+        set tipA = DzCreateFrameByTagName("TEXT","TooltipSimpleTextDes" , backdrop, "TooltipTipText" ,0)
+        call DzFrameSetSize(tipA, textW, 0)
+        call DzFrameSetText(tipA, "施放在具有远程攻击能力的敌方建筑物上使其丧失攻击力。|n持续12秒。")
+        //call DzFrameSetAbsolutePoint(tipA, 6, 0.4, 0.3)
+    
+        //名字
+        set name = DzCreateFrameByTagName("TEXT","TooltipSimpleTextName" , backdrop ,"TooltipHeadText" ,0)
+        call DzFrameSetSize(name,textW, 0)
+        call DzFrameSetText(name, "致命一击")
+        call DzFrameSetPoint(name, 6, tipA, 0, 0, 0.006)
+    
+        
+        //背景锚点 
+        call DzFrameSetPoint(backdrop, 0, name, 0, -padding_lr, padding_tb )
+        call DzFrameSetPoint( backdrop, 6, tipA, 6, -padding_lr, -padding_tb )
+    
+        set FLAG = true
+    endfunction
+    
+    //注册按钮鼠标描述
+    function RigesterTooltipSimple takes integer but returns nothing
+        call DzFrameSetScriptByCode( but, 2, function Display, false )
+        call DzFrameSetScriptByCode( but, 3, function Hide, false )
+        call SaveBoolean(HT,but,0,true)
+    endfunction
+    
+    //设置按钮描述信息
+    function TooltipSimpleSetInfo takes integer but, integer index,string str returns nothing
+        call SaveStr(HT, but, index, str)
+    endfunction
+    
+    //清除信息
+    function TooltipSimpleClearInfo takes integer but returns nothing
+        call FlushChildHashtable(HT, but)
+    endfunction
+    
+    //设置显示偏移
+    function TooltipSimpleSetOffset takes integer but, real x,real y returns nothing
+        call SaveReal(HT, but, 8, x)
+        call SaveReal(HT, but, 9, y)
+    endfunction
+    
+    //禁用启用
+    function EnableTooltipSimple takes integer but,boolean mode  returns nothing
+        call SaveBoolean(HT,but,0,mode)
+    endfunction
+    
+    endlibrary
+
+    <?
+    #ifdef IMPORT_SRC
+        #ifndef IMPORT_TOOLTIP_SRC
+            #define IMPORT_TOOLTIP_SRC
+            #include "src\import.lua"
+        #endif
+    
+    #endif
+    ?>
+    

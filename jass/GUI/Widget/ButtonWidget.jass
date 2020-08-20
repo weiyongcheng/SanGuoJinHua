@@ -1,0 +1,236 @@
+library ButtonWidget initializer init requires UIBase
+
+globals
+    private hashtable HT_UI
+
+endglobals
+
+private function mouse_enter takes nothing returns nothing
+    local integer but = DzGetTriggerUIEventFrame()
+    if LoadBoolean(HT_UI, but, 0)   then 
+        //高亮
+        call DzFrameShow(LoadInteger(HT_UI, but, 4), true)
+    endif
+    //call MSG("鼠标进入")
+endfunction
+private function mouse_leave takes nothing returns nothing
+    local integer but = DzGetTriggerUIEventFrame()
+    if LoadBoolean(HT_UI, but, 0)   then 
+        //高亮
+        call DzFrameShow(LoadInteger(HT_UI, but, 4), false)
+    endif
+endfunction
+
+//创建模板按钮
+// 模板按钮不能修改高亮贴图，但是可以有所有UI事件
+function CreateButtonWidgetByTemplate takes integer parent, string template returns integer
+    local integer index = LoadInteger(HT_UI, 0, 0)  + 1
+    local integer backdrop
+    local integer but
+    local integer fa
+
+    //计数
+    call SaveInteger(HT_UI, 0, 0, index + 1)
+
+    //父对象
+    if parent <=0   then
+        set parent = GAME_UI
+    endif
+    //按钮
+    set but = DzCreateFrame(template, parent, index)
+    //call MSG("创建按钮组,but=" + I2S(but))
+    if but <= 0 then
+        return 0
+    endif
+
+    //背景
+    set fa =  DzFrameFindByName(template + "Backdrop", index)
+    call SaveInteger(HT_UI, but, 1, fa)
+
+    //按下时背景
+    set fa =  DzFrameFindByName(template + "PushedBackdrop", index)
+    call SaveInteger(HT_UI, but, 2, fa)
+
+    //禁用时背景
+    set fa =  DzFrameFindByName(template + "DisabledBackdrop", index)
+    call SaveInteger(HT_UI, but, 3, fa)
+
+    //类型
+    call SaveInteger(HT_UI, but , 0, 1)
+
+    //使用
+    call SaveBoolean(HT_UI, but, 0 ,true)
+
+    return but
+endfunction
+
+//创建普通按钮
+//  普通按钮会占用鼠标进入和离开事件，再次注册这两个事件会冲突
+//  with_sound: 是否有点击声音
+function CreateButtonWidget takes integer parent, boolean with_sound returns integer
+    local integer index = LoadInteger(HT_UI, 0, 1)  + 1
+    local integer backdrop
+    local integer but
+    local integer fa
+
+    //计数
+    call SaveInteger(HT_UI, 0, 1, index)
+
+    //父对象
+    if parent <=0   then
+        set parent = GAME_UI
+    endif
+    //按钮
+    if with_sound  then
+        set but = DzCreateFrameByTagName("GLUETEXTBUTTON", "ButtonWidget", parent, "GlueButtonTemplate", index)
+    else
+        set but = DzCreateFrameByTagName("BUTTON", "ButtonWidget", parent, "ButtonTemplate", index)
+    endif
+
+    //背景
+    set backdrop =  DzCreateFrameByTagName("BACKDROP", "ButtonWidget-Backdrop", but, "BackdropTemplate", index)
+    call DzFrameSetAllPoints(backdrop, but)
+    call SaveInteger(HT_UI, but, 1, backdrop)
+
+    //高亮
+    set fa = DzCreateFrameByTagName("BACKDROP", "ButtonWidget-Highlight", but, "ButtonTemplate", index)
+    call DzFrameSetAllPoints(fa, but)
+    call DzFrameSetTexture(fa, DEFAULT_ICON, 0)
+    call DzFrameShow(fa, false) //初始隐藏
+    call SaveInteger(HT_UI, but, 4, fa)
+    
+    //类型
+    call SaveInteger(HT_UI, but , 0, 2)
+
+    //使用
+    call SaveBoolean(HT_UI, but, 0 ,true)
+
+    //事件
+    call DzFrameSetScriptByCode(but, 2, function mouse_enter, false)
+    call DzFrameSetScriptByCode(but, 3, function mouse_leave, false)
+
+    return but
+endfunction
+
+
+//设置图标
+//  icon_index: 图标索引,1-背景,2-按下时背景(普通按钮无效),3-禁用时背景,4-高亮(普通按钮) 没有背景时使用默认背景
+function ButtonWidgetSetBackdrop takes integer but, integer icon_index, string art returns nothing
+    local integer ty
+    local integer fa
+    if LoadBoolean(HT_UI, but, 0)   then 
+        set ty = LoadInteger(HT_UI, but, 0)
+        if ty == 1  then
+            //模板按钮, 直接设置
+            set fa = LoadInteger(HT_UI, but, icon_index)
+            if fa > 0   then
+                call DzFrameSetTexture(fa,  art, 0)
+            endif
+        elseif ty == 2  then
+            //普通按钮
+            //保存信息并设置图标
+            set fa = LoadInteger(HT_UI, but, icon_index)
+            if fa > 0   then
+                call DzFrameSetTexture(fa,  art, 0)
+            endif
+            call SaveStr(HT_UI, but, icon_index, art)
+            
+        endif
+        
+    endif
+endfunction
+
+//设置按钮样式
+//  style:样式编号, 1-正常,2-禁用,3-闪烁
+function ButtonWidgetSetStyle takes integer but, integer style returns nothing
+    local integer ty
+    local integer fa
+    local string str
+    if not LoadBoolean(HT_UI, but, 0)   then 
+        return
+    endif
+    set ty = LoadInteger(HT_UI, but, 0)
+    if style == 1   then    //正常
+        if ty == 1 or ty == 2 then    //模板按钮 or 普通按钮
+            set fa = LoadInteger(HT_UI, but, 1) //背景
+            set str = LoadStr(HT_UI, but, 1)    //背景贴图
+            if str == null or str == "" then
+                set str = DEFAULT_ICON
+            endif
+            call DzFrameSetTexture(fa, str, 0)
+            //透明度恢复
+            call DzFrameSetAlpha(fa, 255)
+        endif
+
+    elseif style == 2   then    //禁用
+        if ty == 1 or ty == 2 then    //模板按钮 or 普通按钮
+            set fa = LoadInteger(HT_UI, but, 1) //背景
+            set str = LoadStr(HT_UI, but, 3)    //禁用时背景贴图
+            if str == null or str == "" then
+                set str = LoadStr(HT_UI, but, 1)    //背景贴图
+                if str == null or str == "" then
+                    set str = DEFAULT_ICON
+                endif
+                 //透明度降低
+                call DzFrameSetAlpha(fa, 155)
+            endif
+            call DzFrameSetTexture(fa, str, 0)
+        endif
+    endif
+    
+endfunction
+
+//设置禁用
+function ButtonWidgetSetEnable takes integer but, boolean enble returns nothing
+    local integer ty
+    local integer fa
+    local string str
+    if not LoadBoolean(HT_UI, but, 0)   then 
+        return
+    endif
+       
+    set ty = LoadInteger(HT_UI, but, 0)
+    if ty == 1  then    //模板按钮
+        call ButtonWidgetSetStyle(but, 1)   //先设置为正常样式
+        
+        if enble    then
+            set fa = LoadInteger(HT_UI, but, 3)
+            if fa > 0   then
+                //透明度恢复
+                 call DzFrameSetAlpha(fa, 255)
+            endif
+        else
+            set fa = LoadInteger(HT_UI, but, 3)
+            if fa > 0   then
+                set str = LoadStr(HT_UI, but, 3)    //禁用时背景贴图
+                if str == null or str == "" then
+                    set str = LoadStr(HT_UI, but, 1)    //背景贴图
+                    if str == null or str == "" then
+                        set str = DEFAULT_ICON
+                    endif
+                    //透明度降低
+                    call DzFrameSetAlpha(fa, 155)
+                endif
+                call DzFrameSetTexture(fa, str, 0)
+            endif
+        endif
+    elseif ty == 2  then    //普通按钮
+        if enble    then
+            call ButtonWidgetSetStyle(but, 1)
+        else
+            //隐藏高亮贴图
+            set fa = LoadInteger(HT_UI, but, 4)
+            call DzFrameShow(fa, false)
+
+            call ButtonWidgetSetStyle(but, 2)
+        endif
+
+    endif
+    call DzFrameSetEnable(but, enble)
+endfunction
+
+private function init takes nothing returns nothing
+    set HT_UI = InitHashtable()
+endfunction
+
+endlibrary

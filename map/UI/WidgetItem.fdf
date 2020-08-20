@@ -1,0 +1,39 @@
+
+IncludeFile "UI\template.fdf",
+
+//下标
+Frame "TEXT" "WidgetItemASubscript"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYCENTER,
+    FontJustificationV JUSTIFYBOTTOM, 
+    FrameFont "EscMenuTextFont", 0.012, "",
+}
+
+//子控件按钮
+Frame "BUTTON" "WidgetItemAButton" {
+    ControlStyle "AUTOTRACK|HIGHLIGHTONMOUSEOVER",
+
+    ControlBackdrop "WidgetItemAButtonBackdrop",
+    Frame "BACKDROP" "WidgetItemAButtonBackdrop" INHERITS "BackdropWithBorderTemplate" {
+        BackdropCornerSize  0.01,
+    }
+    
+    ControlPushedBackdrop "WidgetItemAButtonPushedBackdrop",
+    Frame "BACKDROP" "WidgetItemAButtonPushedBackdrop" INHERITS "BackdropWithBorderTemplate" {
+        BackdropCornerSize  0.01,
+    }
+
+    ControlDisabledBackdrop "WidgetItemAButtonDisabledBackdrop",
+    Frame "BACKDROP" "WidgetItemAButtonDisabledBackdrop"  {
+        BackdropBackground  "ui\alphatexture.blp",
+        //BackdropEdgeFile  "ui\alphatexture.blp",
+        BackdropBlendAll,
+    }
+
+    ControlMouseOverHighlight "ButtonMouseOverHighlight",
+    Frame "HIGHLIGHT" "ButtonMouseOverHighlight" {
+        HighlightType "FILETEXTURE",
+        HighlightAlphaFile "ui\TableWidgetItem-Highlight-A.blp",       
+        HighlightAlphaMode "ADD",
+    }
+}

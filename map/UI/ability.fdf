@@ -1,0 +1,32 @@
+
+Frame "TEXT" "AbilityBarItemTextTemplate" {
+    FontJustificationH JUSTIFYCENTER,
+    FontJustificationV JUSTIFYBOTTOM,
+    FontColor 1.0 1.0 1.0 1.0,
+	FontShadowColor 0.0 0.0 0.0 0.9,
+    FontShadowOffset 0.001 -0.001,
+	Font "ui\ui.ttf",0.014,
+}
+//技能栏-框架
+Frame "FRAME" "AbilityBarItem" 
+{
+    Width 0.03,
+    Height 0.03,
+    //SetAllPoints,
+
+    // --- icon 
+    Frame "BACKDROP" "AbilityBarItemIcon" {
+        SetPoint BOTTOM, "AbilityBarItem", BOTTOM, 0., 0.,
+        Width 0.03,
+        Height 0.03,
+        //BackdropBlendAll,
+        BackdropBackground  "ReplaceableTextures\CommandButtons\BTNRifleman.blp",
+    }
+    // --- 技能等级
+    Frame "TEXT" "AbilityBarItemTextLevel" INHERITS "AbilityBarItemTextTemplate" {
+        SetPoint BOTTOM, "AbilityBarItemIcon", BOTTOM, 0., 0.002,
+		Width 0.03,
+        Text "技能等级",
+    }
+
+}

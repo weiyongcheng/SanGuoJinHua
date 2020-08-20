@@ -1,0 +1,92 @@
+library MainPanel initializer init requires UIBase, ButtonWidget, TableView, MultiPanel, WidgetItemA, WidgetItemB
+//6个面板
+//1-宝物
+//2-签到
+//3-道具
+//4-首冲礼包
+//5-充值返利
+//6-成就
+
+globals
+    private integer backdrop    //主面板
+    private integer guideBar    //导航条
+
+    //面板大小
+    private real backdrop_w  //主面板宽
+    private real backdrop_h  //主面板高
+
+    //
+    private hashtable HT_UI
+endglobals
+
+//宝物
+#include "PageA.jass"
+
+//签到
+#include "PageB.jass"
+
+//道具
+#include "PageC.jass"
+
+//首冲礼包
+#include "PageD.jass"
+
+//充值返利
+#include "PageE.jass"
+
+//成就
+#include "PageF.jass"
+
+function CreateMainPanel   takes nothing returns nothing
+    local real w = 0.5
+    local real h = 0.38
+    local integer fa
+
+    set backdrop_w = w
+    set backdrop_h = h
+
+    //创建主面板
+    set backdrop =  CreateMultiPanel(w, h, 6)
+    call DzFrameSetPoint(backdrop, 4, DzGetGameUI(), 4, 0, 0.04)
+    //给主面板创建导航条
+    set guideBar = MultiPanelCreateGuideBar(backdrop, w - 0.01, 0.036, true, 0.002, 0.008, 0, 0.006)
+    call DzFrameSetPoint(guideBar, 1, backdrop, 1, 0, -0.006)
+    //默认高亮贴图
+    debug call ButtonGroupSetHighlightTexture(guideBar, "UI\\Widgets\\Console\\Human\\human-console-button-highlight.blp")
+    
+    //导航条按钮格式化
+    set fa = MutiPanelGetGuideButton(backdrop, 1)
+    debug call ButtonWidgetSetBackdrop(fa, 1, "UI\\Feedback\\Resources\\recourceonly.blp")    //背景
+    //call ButtonWidgetSetBackdrop(fa, 4, "UI\\Widgets\\Console\\Human\\human-console-button-highlight.blp")  //高亮
+    
+    set fa = MutiPanelGetGuideButton(backdrop, 2)
+    debug call ButtonWidgetSetBackdrop(fa, 1, "UI\\Feedback\\Resources\\recourceonly.blp")    //背景
+   
+    set fa = MutiPanelGetGuideButton(backdrop, 3)
+    debug call ButtonWidgetSetBackdrop(fa, 1, "UI\\Feedback\\Resources\\recourceonly.blp")    //背景
+
+    set fa = MutiPanelGetGuideButton(backdrop, 4)
+    debug call ButtonWidgetSetBackdrop(fa, 1, "UI\\Feedback\\Resources\\recourceonly.blp")    //背景
+    
+    set fa = MutiPanelGetGuideButton(backdrop, 5)
+    debug call ButtonWidgetSetBackdrop(fa, 1, "UI\\Feedback\\Resources\\recourceonly.blp")    //背景
+   
+    set fa = MutiPanelGetGuideButton(backdrop, 6)
+    debug call ButtonWidgetSetBackdrop(fa, 1, "UI\\Feedback\\Resources\\recourceonly.blp")    //背景
+
+
+    //给不同面页创建不同元素
+    call CreateMainPanelPageA()
+    call CreateMainPanelPageB()
+    call CreateMainPanelPageC()
+    call CreateMainPanelPageD()
+    call CreateMainPanelPageE()
+    call CreateMainPanelPageF()
+endfunction
+
+
+private function init takes nothing returns nothing
+    set HT_UI = InitHashtable()
+endfunction
+
+endlibrary

@@ -1,0 +1,176 @@
+
+
+
+
+function Test_PanelAbility takes nothing returns nothing
+    local integer table = PanelAbilityGetMainTable()
+    local hashtable infoset = TableViewGetInfoSet(table)
+    local integer item_id
+    local integer i
+
+    set i = 1
+    loop
+        set item_id = TableViewInfoSetAddItem(table, -1)
+        call SaveStr(infoset, item_id, DATA_ART, "ReplaceableTextures\\PassiveButtons\\PASBTNFrost.blp")
+        call SaveStr(infoset, item_id,  DATA_NAME, "麻痹戒指")
+        call SaveStr(infoset, item_id,  DATA_TOOLTIP_A, "能够麻痹佩戴者的戒指，让佩戴者沉迷于麻痹世界")
+        call SaveStr(infoset, item_id,  DATA_SUBSCRIPT, "Lv" + I2S(i))
+        set i = i + 1
+        exitwhen i > 30
+
+    endloop
+   
+    call TableViewDoFilter(table, true)
+    call MSG("Test_PanelAbility 结束")
+endfunction
+
+
+function Test_PanelAbilitySelector takes nothing returns nothing
+    call PanelAbilitySelectorInsertItem(2)
+    call PanelAbilitySelectorInsertItem(3)
+    call PanelAbilitySelectorInsertItem(4)
+    call MSG("Test_PanelAbilitySelector 结束")
+endfunction
+
+
+function Test_PanelTalent takes nothing returns nothing
+    local integer table = PanelTalentGetMainTable()
+    local hashtable infoset = TableViewGetInfoSet(table)
+    local integer item_id
+    local integer i
+
+    set i = 1
+    loop
+        set item_id = TableViewInfoSetAddItem(table, -1)
+        call SaveStr(infoset, item_id, DATA_ART, "ReplaceableTextures\\CommandButtons\\BTNMarkOfFire.blp")
+        call SaveStr(infoset, item_id,  DATA_NAME, "火焰攻击")
+        call SaveStr(infoset, item_id,  DATA_TOOLTIP_A, "增加攻击力")
+        call SaveStr(infoset, item_id,  DATA_SUBSCRIPT, "Lv" + I2S(i))
+        set i = i + 1
+        exitwhen i > 5
+
+    endloop
+   
+    call TableViewDoFilter(table, true)
+    call MSG("Test_PanelTalent 结束")
+endfunction
+/*
+function test takes nothing returns nothing
+    
+    local integer item_id
+    local integer table = CreateTableView(4, 6, 0.36, 0.24, 0.008, 0.01, 0.006, 0.004)
+    call DzFrameSetPoint(table, 4, DzGetGameUI(), 4, 0, 0)
+
+    //注册子控件
+    call TableViewRegisterItem(table, WidgetItemAInit())
+
+    set item_id =  TableViewInfoSetAddItem(table, -1)
+    call TableViewSetDataItemString(table, item_id, DATA_ART, "ReplaceableTextures\\PassiveButtons\\PASBTNFrost.blp")
+    call TableViewSetDataItemString(table, item_id, DATA_NAME, "麻痹戒指")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_A, "能够麻痹佩戴者的戒指，让佩戴者沉迷于麻痹世界(tooltipA)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_B, "力量 + 麻痹点|n攻击力 + 麻痹点 |n 智力 - 麻痹点 |n(tooltipB)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_C, "小心被麻痹(tooltipC)")
+
+    set item_id =  TableViewInfoSetAddItem(table, -1)
+    call TableViewSetDataItemString(table, item_id, DATA_ART, "ReplaceableTextures\\CommandButtons\\BTNCannibalize.blp")
+    call TableViewSetDataItemString(table, item_id, DATA_NAME, "麻痹戒指")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_A, "能够麻痹佩戴者的戒指，让佩戴者沉迷于麻痹世界(tooltipA)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_B, "力量 + 麻痹点|n攻击力 + 麻痹点 |n 智力 - 麻痹点 |n(tooltipB)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_C, "小心被麻痹(tooltipC)")
+
+    set item_id =  TableViewInfoSetAddItem(table, -1)
+    call TableViewSetDataItemString(table, item_id, DATA_ART, "ReplaceableTextures\\CommandButtons\\BTNSacrifice.blp")
+    call TableViewSetDataItemString(table, item_id, DATA_NAME, "麻痹戒指")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_A, "能够麻痹佩戴者的戒指，让佩戴者沉迷于麻痹世界(tooltipA)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_B, "力量 + 麻痹点|n攻击力 + 麻痹点 |n 智力 - 麻痹点 |n(tooltipB)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_C, "小心被麻痹(tooltipC)")
+
+    set item_id =  TableViewInfoSetAddItem(table, -1)
+    call TableViewSetDataItemString(table, item_id, DATA_ART, "ReplaceableTextures\\CommandButtons\\BTNUnholyFrenzy.blp")
+    call TableViewSetDataItemString(table, item_id, DATA_NAME, "麻痹戒指")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_A, "能够麻痹佩戴者的戒指，让佩戴者沉迷于麻痹世界(tooltipA)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_B, "力量 + 麻痹点|n攻击力 + 麻痹点 |n 智力 - 麻痹点 |n(tooltipB)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_C, "小心被麻痹(tooltipC)")
+
+    set item_id =  TableViewInfoSetAddItem(table, -1)
+    call TableViewSetDataItemString(table, item_id, DATA_ART, "ReplaceableTextures\\PassiveButtons\\PASBTNFrost.blp")
+    call TableViewSetDataItemString(table, item_id, DATA_NAME, "麻痹戒指")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_A, "能够麻痹佩戴者的戒指，让佩戴者沉迷于麻痹世界(tooltipA)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_B, "力量 + 麻痹点|n攻击力 + 麻痹点 |n 智力 - 麻痹点 |n(tooltipB)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_C, "小心被麻痹(tooltipC)")
+
+    set item_id =  TableViewInfoSetAddItem(table, -1)
+    call TableViewSetDataItemString(table, item_id, DATA_ART, "ReplaceableTextures\\CommandButtons\\BTNCryptFiendBurrow.blp")
+    call TableViewSetDataItemString(table, item_id, DATA_NAME, "麻痹戒指")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_A, "能够麻痹佩戴者的戒指，让佩戴者沉迷于麻痹世界(tooltipA)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_B, "力量 + 麻痹点|n攻击力 + 麻痹点 |n 智力 - 麻痹点 |n(tooltipB)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_C, "小心被麻痹(tooltipC)")
+
+    set item_id =  TableViewInfoSetAddItem(table, -1)
+    call TableViewSetDataItemString(table, item_id, DATA_ART, "ReplaceableTextures\\PassiveButtons\\PASBTNFrost.blp")
+    call TableViewSetDataItemString(table, item_id, DATA_NAME, "麻痹戒指")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_A, "能够麻痹佩戴者的戒指，让佩戴者沉迷于麻痹世界(tooltipA)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_B, "力量 + 麻痹点|n攻击力 + 麻痹点 |n 智力 - 麻痹点 |n(tooltipB)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_C, "小心被麻痹(tooltipC)")
+
+    set item_id =  TableViewInfoSetAddItem(table, -1)
+    call TableViewSetDataItemString(table, item_id, DATA_ART, "ReplaceableTextures\\CommandButtons\\BTNCryptFiendBurrow.blp")
+    call TableViewSetDataItemString(table, item_id, DATA_NAME, "麻痹戒指")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_A, "能够麻痹佩戴者的戒指，让佩戴者沉迷于麻痹世界(tooltipA)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_B, "力量 + 麻痹点|n攻击力 + 麻痹点 |n 智力 - 麻痹点 |n(tooltipB)")
+    call TableViewSetDataItemString(table, item_id, DATA_TOOLTIP_C, "小心被麻痹(tooltipC)")
+
+
+    call TableViewDoFilter(table, true)
+    call MSG("TableView 结束")
+    
+
+    call TooltipInit()
+    call MSG("TooltipInit 结束")
+
+    //call TooltipSimpleInit()
+    //call MSG("TooltipSimpleInit 结束")
+
+    call MSG("test 结束")
+endfunction
+*/
+
+/*
+function test takes nothing returns nothing
+    
+    local integer item_id
+    local integer table = CreateTableView(2, 2, 0.3, 0.2, 0.006, 0.008, 0.006, 0.004)
+    call DzFrameSetPoint(table, 4, DzGetGameUI(), 4, 0, 0)
+
+    //注册子控件
+    call TableViewRegisterItem(table, WidgetItemBInit())
+
+    set item_id =  TableViewInfoSetAddItem(table, -1)
+    call TableViewSetDataItemString(table, item_id, DATA_ART, "UI\\Glues\\Loading\\Backgrounds\\Campaigns\\Dalaran-TopRight.blp")
+    call TableViewSetDataItemString(table, item_id, DATA_NAME, "向暴雪娱乐寄刀片")
+    call TableViewSetDataItemString(table, item_id, WidgetItemB_SUBSCRIPT, "24/100")
+    call TableViewSetDataItemString(table, item_id, WidgetItemB_LABEL_ART,  "UI\\Feedback\\Resources\\recourceonly.blp")
+    call TableViewSetDataItemString(table, item_id, WidgetItemB_Des, "暴雪老是瞎JB'乱更新魔兽争霸，不如我们给他寄刀片，让他明白自己的所作所为|n刀片请充值购买")
+
+    set item_id =  TableViewInfoSetAddItem(table, -1)
+    call TableViewSetDataItemString(table, item_id, DATA_ART, "UI\\Glues\\Loading\\Backgrounds\\Campaigns\\Dalaran-TopRight.blp")
+    call TableViewSetDataItemString(table, item_id, DATA_NAME, "向暴雪娱乐写投诉信")
+    call TableViewSetDataItemString(table, item_id, WidgetItemB_SUBSCRIPT, "2/10")
+    call TableViewSetDataItemString(table, item_id, WidgetItemB_LABEL_ART,  "UI\\Feedback\\Resources\\recourceonly.blp")
+    call TableViewSetDataItemString(table, item_id, WidgetItemB_Des, "写投诉信是很好的联系写作能力的方式，大家多向暴雪写投诉信|n刀片请充值购买")
+
+
+    call TableViewDoFilter(table, true)
+    call MSG("TableView 结束")
+    
+
+    call TooltipInit()
+    call MSG("TooltipInit 结束")
+
+    //call TooltipSimpleInit()
+    //call MSG("TooltipSimpleInit 结束")
+
+    call MSG("test 结束")
+endfunction
+
+*/

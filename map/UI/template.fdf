@@ -1,0 +1,27 @@
+//文本
+Frame "TEXT" "TextNoEventTemplate" {
+	DecorateFileNames,
+    FrameFont "EscMenuTextFont", 0.01, "",
+    FontColor 1.0 1.0 1.0 1.0,
+    LayerStyle "IGNORETRACKEVENTS",	
+}
+
+
+//默认Backdrop
+Frame "BACKDROP" "BackdropTemplate" {
+    	BackdropTileBackground,
+    	BackdropBackground "ui\alphatexture.blp",
+   	    BackdropBlendAll,
+}
+
+//带边框背景
+Frame "BACKDROP" "BackdropWithBorderTemplate" {
+    	BackdropTileBackground,
+    	BackdropBackground "ui\ButtonTooltip_Backdrop.blp",
+    	BackdropBackgroundSize  0.02,
+    	BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
+    	BackdropCornerSize  0.012,
+    	BackdropBackgroundInsets 0.003 0.003 0.003 0.003,
+    	BackdropEdgeFile  "ui\ButtonTooltip_Border.blp",
+   	    BackdropBlendAll,
+}

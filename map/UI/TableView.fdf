@@ -1,0 +1,43 @@
+
+IncludeFile "UI\template.fdf",
+
+//下标
+Frame "TEXT" "TableViewItemSubscript"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYCENTER,
+    FontJustificationV JUSTIFYBOTTOM, 
+    FrameFont "EscMenuTextFont", 0.012, "",
+}
+
+//子控件按钮
+Frame "BUTTON" "TableViewButton" {
+    ControlStyle "AUTOTRACK|HIGHLIGHTONMOUSEOVER",
+
+    ControlBackdrop "TableViewButtonBackdrop",
+    Frame "BACKDROP" "TableViewButtonBackdrop"{
+        BackdropBackground  "ui\alphatexture.blp",
+        //BackdropEdgeFile  "ui\alphatexture.blp",
+        BackdropBlendAll,
+    }
+    
+    ControlPushedBackdrop "TableViewButtonPushedBackdrop",
+    Frame "BACKDROP" "TableViewButtonPushedBackdrop"  {
+        BackdropBackground  "ui\alphatexture.blp",
+        //BackdropEdgeFile  "ui\alphatexture.blp",
+        BackdropBlendAll,
+    }
+
+    ControlDisabledBackdrop "TableViewButtonDisabledBackdrop",
+    Frame "BACKDROP" "TableViewButtonDisabledBackdrop"  {
+        BackdropBackground  "ui\alphatexture.blp",
+        //BackdropEdgeFile  "ui\alphatexture.blp",
+        BackdropBlendAll,
+    }
+
+    ControlMouseOverHighlight "ButtonMouseOverHighlight",
+    Frame "HIGHLIGHT" "ButtonMouseOverHighlight" {
+        HighlightType "FILETEXTURE",
+        HighlightAlphaFile "ui\ButtonWidget-Highlight.blp",       
+        HighlightAlphaMode "ADD",
+    }
+}

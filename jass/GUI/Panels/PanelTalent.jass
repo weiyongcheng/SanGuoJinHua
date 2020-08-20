@@ -1,0 +1,112 @@
+
+/*
+天赋面板
+*/
+
+library PanelTalent requires  TableView, WidgetItemA, ButtonWidget
+
+globals
+    private integer MainTable
+    private integer MainPanel
+    private boolean show
+
+    hashtable PanelTalent_InfoSet
+endglobals
+
+private function close takes nothing returns nothing
+    call DzFrameShow(MainPanel, false)
+    set show = false
+    call SaveBoolean(HT_FrameInfo, MainPanel, 1, show)
+endfunction
+
+//道具面页
+function PanelTalentInit takes nothing returns nothing
+    //5x1 table view
+    local integer fa
+    local integer fb
+    local integer table
+    local integer i 
+    local real padding_lr = 0.002
+    local real padding_top = 0.026
+    local real padding_bottom = 0.002
+    local real h = 0.24 //table高
+    local real w = 0.164  //table宽
+
+    set show = false
+    //背景
+    set MainPanel = DzCreateFrameByTagName("BACKDROP", "PanelTalent-Panel", GAME_UI, "BackdropWithBorderTemplate", 0)
+    call DzFrameSetPoint(MainPanel, 4, DzGetGameUI(), 4, 0, 0)
+    call DzFrameSetSize(MainPanel, w + 2*padding_lr, h + padding_top + padding_bottom )
+    call DzFrameShow(MainPanel, show)
+
+    //标题
+    set fa = DzCreateFrameByTagName("TEXT", "PanelTalent-Titile", MainPanel, "TextNoEventTemplate", 0)
+    call DzFrameSetPoint(fa, 1, MainPanel, 1, 0., -0.004)
+    call DzFrameSetTextAlignment(fa, 1)
+    call DzFrameSetFont(fa, FONT, 0.016, 0)
+    call DzFrameSetText(fa, "天赋")
+
+    //面页导航按钮
+    //关闭
+    set fa = CreateButtonWidgetByTemplate(MainPanel, "PanelButtonGroup")
+    call ButtonWidgetSetBackdrop(fa, 1, "ui\\PanelButtonGroup-Close.blp")
+    call ButtonWidgetSetBackdrop(fa, 2, "ui\\PanelButtonGroup-Close.blp")
+    call DzFrameSetPoint(fa, 2, MainPanel, 2, -0.004, -0.004)
+    call DzFrameSetSize(fa, 0.016, 0.016)
+    call DzFrameSetScriptByCode(fa, 1, function close, false)
+    //帮助
+    set fb = CreateButtonWidgetByTemplate(MainPanel, "PanelButtonGroup")
+    call ButtonWidgetSetBackdrop(fb, 1, "ui\\PanelButtonGroup-Helper.blp")
+    call ButtonWidgetSetBackdrop(fb, 2, "ui\\PanelButtonGroup-Helper.blp")
+    call DzFrameSetPoint(fb, 5, fa, 3, -0.002, 0.)
+    call DzFrameSetSize(fb, 0.016, 0.016)
+
+    
+
+
+    //table view
+    set table = CreateTableView(MainPanel, 5, 1, w,  h, 0, 0.004, 0., 0., 0.004)
+    call DzFrameSetPoint(table, 0, MainPanel, 0, padding_lr, -padding_top)
+    set MainTable = table
+    //信息集
+    call TableViewRegisterDataSet(table, null)
+    set PanelTalent_InfoSet = TableViewGetInfoSet(table)
+    //注册子控件
+    call TableViewRegisterItem(table, WidgetItemA())
+
+    //创建滑调
+    call TableViewCreateSlider(table)
+
+    //注册子控件鼠标滚轮翻页
+    set i = TableViewGetIntData(table, 6) * TableViewGetIntData(table, 7)   //控件总数
+    loop
+        set fa = TableViewGetSubControl(table, i)
+        call TableViewRegisterButtonPageEvent(table, fa)
+        set i = i - 1
+        exitwhen i < 1
+    endloop
+    
+
+
+    debug call MSG("PanelTalent创建结束")
+endfunction
+
+
+
+//获取table
+function PanelTalentGetMainTable takes nothing returns integer
+    return MainTable
+endfunction
+
+//获取背景
+function PanelTalentGetMainPanel takes nothing returns integer
+    return MainPanel
+endfunction
+
+
+//function PanelTalentIsShow takes boolean flag returns nothing
+
+//endfunction
+
+endlibrary
+

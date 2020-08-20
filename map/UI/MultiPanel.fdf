@@ -1,0 +1,27 @@
+
+IncludeFile "UI\template.fdf",
+IncludeFile "UI\FrameDef\UI\EscMenuTemplates.fdf",
+
+
+//导航按钮模板
+Frame "GLUETEXTBUTTON" "MultiPanelGuideButton" {
+    ControlStyle "AUTOTRACK|HIGHLIGHTONMOUSEOVER",
+    //ButtonPushedTextOffset 0.002f -0.002f,    
+
+    ControlBackdrop "MultiPanelGuideButtonBackdrop",
+    Frame "BACKDROP" "MultiPanelGuideButtonBackdrop"  INHERITS "EscMenuButtonBackdropTemplate"{
+    }
+
+    ControlPushedBackdrop "MultiPanelGuideButtonPushedBackdrop",
+    Frame "BACKDROP" "MultiPanelGuideButtonPushedBackdrop"  INHERITS "EscMenuButtonPushedBackdropTemplate"{
+    }
+
+    ControlDisabledBackdrop "MultiPanelGuideButtonDisabledBackdrop",
+    Frame "BACKDROP" "MultiPanelGuideButtonDisabledBackdrop"  INHERITS "EscMenuButtonDisabledBackdropTemplate"{
+    }
+
+
+    ControlMouseOverHighlight "MouseOverHighlight",
+    Frame "HIGHLIGHT" "MouseOverHighlight" INHERITS "EscMenuButtonMouseOverHighlightTemplate"  {
+    }
+}

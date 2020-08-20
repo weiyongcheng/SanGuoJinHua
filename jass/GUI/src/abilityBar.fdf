@@ -1,0 +1,86 @@
+IncludeFile "ui\template.fdf",
+
+
+//技能等级文本
+Frame "TEXT" "AbilityBarItemTextLevel"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYCENTER,
+    FontJustificationV JUSTIFYBOTTOM, 
+    FrameFont "ui\ui.ttf", 0.01, "",
+}
+
+//技能cd文本
+Frame "TEXT" "AbilityBarItemTextCooldown"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYCENTER,
+    FontJustificationV JUSTIFYMIDDLE, 
+    
+    FontColor 0.8 0.8 0.8 0.8,
+    FrameFont "ui\ui.ttf", 0.02, "",
+}
+
+//技能cd文本-小
+Frame "TEXT" "AbilityBarItemTextCooldownMini"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYCENTER,
+    FontJustificationV JUSTIFYMIDDLE, 
+    
+    FontColor 0.8 0.8 0.8 0.8,
+    FrameFont "ui\ui.ttf", 0.01, "",
+}
+
+
+//技能描述边框
+Frame "BACKDROP" "AbilityTooltipBackdrop" INHERITS "BackdropWithBorderTemplate"
+{
+}
+
+//技能描述--名字
+Frame "TEXT" "AbilityTooltipTextName"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    
+    FontColor 1.0 1.0 1.0 1.0,
+    FrameFont "ui\ui.ttf", 0.013, "",
+}
+
+//技能描述--消耗与CD
+Frame "TEXT" "AbilityTooltipTextCost"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    
+    FontColor 0.6 0.6 0.6 0.6,
+    FrameFont "ui\ui.ttf", 0.009, "",
+}
+
+//技能描述--基础描述
+Frame "TEXT" "AbilityTooltipTextDes"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    
+    FontColor 1.0 1.0 1.0 0.9,
+    FrameFont "ui\ui.ttf", 0.011, "",
+}
+
+//技能描述--动态基础描述
+Frame "TEXT" "AbilityTooltipTextActiveDes"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    
+    FontColor 1.0 1.0 1.0 0.9,
+    FrameFont "ui\ui.ttf", 0.010, "",
+}
+
+//技能描述--提示
+Frame "TEXT" "AbilityTooltipTextTip"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    
+    FontColor 0.5 0.5 0.5 0.8,
+    FrameFont "ui\ui.ttf", 0.0096, "",
+}

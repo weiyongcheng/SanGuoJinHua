@@ -1,0 +1,307 @@
+<?
+#ifdef IMPORT_SRC
+#include "src\import.lua"
+#endif
+?>
+
+library TableWidget initializer init requires UIBase, ButtonWidget
+
+globals
+    private hashtable HT_UI
+    private hashtable array HT_Info_List
+    private hashtable HT_Item
+
+endglobals
+
+//获得一个可用的索引
+private function getIndex takes nothing returns integer
+    local integer n = 1
+    loop
+        if not LoadBoolean(HT_UI, n, 0) then
+            return n 
+        endif
+        set n = n +1
+    endloop
+    return 0
+endfunction
+
+//绘制TableWidget, 更新位置信息
+// index: table widget index
+private function paint takes integer index returns nothing
+    local integer row = LoadInteger(HT_UI, index, 6)
+    local integer col = LoadInteger(HT_UI, index, 7)
+
+    local integer table = LoadInteger(HT_UI, index, 1)  //TableWidget背景
+    local real widget_w = LoadReal(HT_UI, index, 2)    //TableWidget宽
+    local real widget_h = LoadReal(HT_UI, index, 3)     //TableWidget高
+
+    local real padding_tb = LoadReal(HT_UI, index, 4)   //背景上下填充
+    local real padding_lr = LoadReal(HT_UI, index, 5)   //背景左右填充
+    local real margin_tb = LoadReal(HT_UI, index, 8)   //项上下边距
+    local real margin_lr = LoadReal(HT_UI, index, 9)   //项左右边距
+
+    local real w =  (widget_w - 2*padding_lr) / col -2*margin_lr   //项宽
+    local real h =  (widget_h - 2*padding_tb) / row -2*margin_tb   //项高
+
+    local real x = padding_lr + (widget_w - 2*padding_lr) / col /2  //项起点锚点x
+    local real x_step = w + 2*margin_lr //项锚点x步进值
+    local real y = padding_tb + (widget_h - 2*padding_tb) / row /2  //项起点锚点y
+    local real y_step = h + 2*margin_tb //项锚点y步进值
+
+    local integer fa
+
+    local integer r = 1
+    local integer c = 1
+    local integer i = 1
+    loop
+        set c = 1
+        loop
+            set fa = LoadInteger(HT_UI, table, 1 + (i-1)*10)   //项背景
+            if(fa >0)   then
+                call DzFrameSetSize(fa, w, h)
+                call DzFrameClearAllPoints(fa)
+                call DzFrameSetPoint(fa, 4, table, 0, x + x_step*(c-1), -y - y_step*(r-1))
+            endif
+            set c = c + 1
+            set i = i + 1
+            exitwhen c > col
+        endloop
+        //
+
+        set r = r +1
+        exitwhen r > row
+
+    endloop
+endfunction
+
+
+//更新TableWidget数据项
+//  index: table widget index
+private function update takes integer index returns nothing
+    local integer table = LoadInteger(HT_UI, index, 0)  //widegt句柄
+    local integer sum = LoadInteger(HT_Item, index, 0)  //显示队列长度
+    local integer i
+    local integer item_index    //数据项序号
+
+    set i = 1
+    loop
+        exitwhen i > sum
+        
+    endloop
+
+endfunction
+
+
+//创建项目
+private function CreateItem takes integer index returns nothing
+    local integer table = LoadInteger(HT_UI, index, 1)  //TableWidget背景
+    local integer id = LoadInteger(HT_UI, 0, 0) //创建过的widget数量
+    local integer backdrop
+    local integer button
+    local integer fa
+    local integer fb
+
+
+    local integer max = LoadInteger(HT_UI, index, 6) * LoadInteger(HT_UI, index, 7) //行x列，项总数
+    local integer i = 1
+    loop
+        //背景
+        set backdrop = DzCreateFrameByTagName("BACKDROP", "TableWidget-Backrop" + I2S(id), GAME_UI, "BackdropTemplate", i)
+        call DzFrameSetTexture(backdrop, "ui\\ListView-Item-Backdrop.blp", 0)
+        call SaveInteger(HT_UI, table, 1 + (i-1)*10, backdrop)
+
+        //图标
+        //set button = DzCreateFrameByTagName("BACKDROP", "TableWidget-Icon" + I2S(id), backdrop, "BackdropTemplate", i)
+        //call DzFrameSetAllPoints(button, backdrop)
+        //call SaveInteger(HT_UI, table, 2 + (i-1)*10, button)
+
+        //按钮组
+        set button = CreateButtonWidget(backdrop)
+        call DzFrameSetAllPoints(button, backdrop)
+        call SaveInteger(HT_UI, table, 3 + (i-1)*10, button)
+
+        //标签
+        set fb = DzCreateFrameByTagName("BACKDROP", "TableWidget-Label" + I2S(id), button, "BackdropTemplate", i)
+        call DzFrameSetAllPoints(fb, button)
+        call SaveInteger(HT_UI, table, 4 + (i-1)*10, fb)
+
+        //下标
+        set fb = DzCreateFrameByTagName("TEXT", "TableWidget-Subscript" + I2S(id), button, "TableWidgetItemSubscript", i)
+        call DzFrameSetPoint(fb, 6, button, 6, 0, 0)
+        call DzFrameSetPoint(fb, 8, button, 8, 0, 0)
+        call DzFrameSetText(fb, "123")
+        call SaveInteger(HT_UI, table, 5 + (i-1)*10, fb)
+
+        set i = i + 1
+        exitwhen i > max
+    endloop
+
+    call paint(index)
+endfunction
+
+
+/////////项目数据集
+
+//插入数据项
+// table_index: table索引
+//  id:信息项句柄
+//  pos:插入位置, 负数则从后往前数, 不合法位置则插入到末尾,插入后，新插入的项成在pos位置
+private function InfoItemInsert takes integer table_index, integer id, integer pos returns nothing
+    local hashtable info = HT_Info_List[table_index]
+    local integer num
+    local integer i 
+    local integer j
+    local integer tmp
+
+    if(info == null)    then
+        return
+    endif
+
+    set num = LoadInteger(info, 0, 0)   //当前信息集数量
+    if pos == 0 then
+        pos = num
+    elseif pos < 0 then 
+        set pos = num + pos + 1
+    elseif pos > num    then
+        set pos = num
+    endif
+
+    set i = num
+    set j = 0
+    loop
+        exitwhen i <= pos
+        set tmp = LoadInteger(info, i, 0)   //当前项句柄
+        call SaveInteger(info, i + 1, 0, tmp)   //项句柄更新
+        call SaveInteger(info, 0, tmp, i + 1)   //项句柄序号更新
+        call SaveInteger(info, i + 1, ,0, tmp)   //项句柄更新
+        call SaveInteger(info, i + 1, 1, LoadInteger(info, i, 1))   //UI组件更新
+        set j = 3
+        loop
+            call SaveStr(info, i + 1, j, LoadStr(info, i, j))
+            set j = j + 1
+            exitwhen j > 12
+        endloop
+      
+        set i = i - 1
+    endloop
+
+    //保存插入项
+    call SaveInteger(info, pos + 1, 0, id)  //句柄
+    call SaveInteger(info, pos + 1, 1, 0)  //UI组件更新
+    call SaveInteger(info, 0, id, pos + 1)  //序号
+    call SaveInteger(info, 0, 0, num + 1)
+
+endfunction
+
+//移除数据项
+// table_index: table索引
+//  id:信息项句柄
+private function InfoItemRemove takes table_index, integer id returns nothing
+    local hashtable info = HT_Info_List[table_index]
+    local integer num
+    local integer index
+    local integer i 
+    local integer j
+    local integer tmp
+    if(info == null)    then
+        return
+    endif
+
+    set num = LoadInteger(info, 0, 0)   //当前信息集数量
+    set index = LoadInteger(info, 0, id)    //序号
+    if index <= 0   then
+        return
+    endif
+
+    //移除插入项
+    call SaveInteger(info, 0, id, 0)  //序号
+    call FlushChildHashtable(info, index)
+
+    set i = index
+    set j = 0
+    loop
+        exitwhen i >= num
+        set tmp = LoadInteger(info, i + 1, 0)   //下一项句柄
+        call SaveInteger(info, i, 0, tmp)   //项句柄更新
+        call SaveInteger(info, i, 1, LoadInteger(info, i + 1, 1))   //UI组件更新
+        call SaveInteger(info, 0, tmp, i)   //项句柄序号更新
+        set j = 3
+        loop
+            call SaveStr(info, i, j, LoadStr(info, i + 1, j))
+            set j = j + 1
+            exitwhen j > 12
+        endloop
+      
+        set i = i + 1
+    endloop
+    call SaveInteger(info, 0, 0, num - 1)
+
+endfunction
+
+//新建数据项
+//  @返回信息项的handle
+private function NewInfoItem takes integer table returns integer
+    local integer index = LoadInteger(HT_UI, table, 0)  //table索引
+    local hashtable info = HT_Info_List[index]  //信息项哈希表
+    local integer id
+    local integer num
+    if info == null then
+        return 0
+    endif
+    set num = LoadInteger(info, 0, 1)   //创建过的数据项数量
+    set num = num + 1
+    call SaveInteger(info, 0, 1, num)
+    set id = 1 + num    //信息项句柄
+    call ItemInsert(id, -1) //将信息项插入到队列中
+    return id
+endfunction
+
+
+//创建TableWidget
+//  @widget 句柄
+function CreateTableWidget takes integer r, integer c , real w, real h , real padding_tb, real padding_lr, real margin_tb, real margin_lr returns integer
+    local integer fa
+    local integer index = getIndex()
+    call SaveBoolean(HT_UI, index, 0, true) //占用索引
+    call SaveInteger(HT_UI, 0, 0, LoadInteger(HT_UI, 0, 0) + 1) //创建过的widget数量
+
+    call SaveInteger(HT_UI, index, 6, r)
+    call SaveInteger(HT_UI, index, 7, c)
+    call SaveReal(HT_UI, index, 2, w)
+    call SaveReal(HT_UI, index, 3, h)
+    call SaveReal(HT_UI, index, 4, padding_tb)
+    call SaveReal(HT_UI, index, 5, padding_lr)
+    call SaveReal(HT_UI, index, 8, margin_tb)
+    call SaveReal(HT_UI, index, 9, margin_lr)
+
+    //创建背景
+    set fa = DzCreateFrameByTagName("BACKDROP", "TableWidget", GAME_UI, "BackdropTemplate", index)
+    call DzFrameSetTexture(fa, "ui\\backdrop-black.blp", 0)
+    call DzFrameSetSize(fa, w, h)
+    call SaveInteger(HT_UI, index, 1, fa)   //序号->句柄
+    call SaveInteger(HT_UI, fa, 0, index)   //句柄->序号
+
+    //创建项目
+    call CreateItem(index)
+
+    //项目数据集哈希表
+    if HT_Info_List[index] == null  then
+        HT_Info_List[index] = InitHashtable()
+    endif
+
+    return fa
+endfunction
+
+
+//过滤信息集数据，将结果添加到TableWidget显示项队列中去
+function TableWidgetDoFilter takes integer table returns nothing
+
+endfunction
+
+
+private function init takes nothing returns nothing
+    set HT_UI = InitHashtable()
+    set HT_Item = InitHashtable()
+endfunction
+
+endlibrary

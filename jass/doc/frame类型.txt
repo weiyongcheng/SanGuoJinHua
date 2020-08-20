@@ -1,0 +1,45 @@
+BACKDROP 	//����
+TEXT		//�ı�
+TEXTAREA	//���ֿ�
+GLUETEXTBUTTON	//��ť
+GLUECHECKBOX	//��ѡ��
+POPUPMENU	//�����˵�
+SCROLLBAR	//������
+SPRITE		//��ӰФ��
+SLIDER		//����
+BUTTON		//��ť
+EDITBOX		//�༭���ı���
+HIGHLIGHT	//�߹�ģ��
+SCROLLBAR	//������
+MENU		//�˵�
+DIALOG		
+SPRITE		//С����
+SIMPLEFRAME	//�򵥿��
+SIMPLESTATUSBAR	//���׹�����
+SIMPLECHECKBOX	//�򵥸�ѡ��
+Layer "ARTWORK"		�㣬��ͼ
+String//一般出现在layer层下面
+
+
+//不支持POPUPMENU
+//BackdropTileBackground, 平铺模式
+//BackdropBlendAll, //Blend，开启透明通道
+//BackdropBackgroundSize  0.35, //修改背景图大小
+//BackdropCornerSize  0.030,//边界大小
+//SetAllPoints, //尺寸与锚点全部附加在父控件上,与父对象大小位置一样
+//BackdropBackgroundInsets 0.005(右) 0.05(上) 0.005(下) 0.05(左),距离边框的距离，向里面
+
+String "ReplayFogString" INHERITS "ReplayPanelStringTemplate" {
+			Anchor BOTTOMLEFT,0.025,0.045,
+			FontJustificationH JUSTIFYLEFT,
+			Text "FOG_OF_WAR",
+		}
+
+Frame "SIMPLESTATUSBAR" "ReplayStatusBar" {
+		DecorateFileNames,
+		SetPoint TOPLEFT,"ReplayVisionMenu",BOTTOMLEFT, 0.003, -0.017,
+		Width 0.158,
+		Height 0.012,
+		BarTexture "SimpleBuildTimeIndicator",
+
+    }

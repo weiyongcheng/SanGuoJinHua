@@ -1,0 +1,67 @@
+#include "BlizzardAPI.j"
+
+library Hardware initializer init
+globals
+    private boolean istype
+
+
+     //窗口
+    integer WINDOW_H
+    integer WINDOW_W
+    integer WINDOW_X
+    integer WINDOW_Y
+    //滚轮
+    integer LastWheelDelta
+endglobals
+
+//--------判断打字---
+function IsUserTyping takes nothing returns boolean
+    return istype
+endfunction
+private function type_switch takes nothing returns nothing
+    if(istype) then
+        set istype=false
+    else
+        set istype=true
+    endif
+endfunction
+private function type_close takes nothing returns nothing
+    set istype=false
+endfunction
+private function type_Event takes nothing returns nothing
+    //local trigger tr=CreateTrigger()
+     call DzTriggerRegisterKeyEventByCode(null, 0xd, 1, false, function type_switch)    //鼠标回车键点击事件
+     call DzTriggerRegisterMouseEventByCode(null, 0x1, 1, false, function type_close)   //鼠标左键点击事件
+     call DzTriggerRegisterKeyEventByCode(null, 0x1b, 1, false, function type_close)    //鼠标ESC键点击事件
+endfunction
+
+
+//-----窗口变化----
+private function window_callback takes nothing returns nothing
+    set  WINDOW_W = DzGetWindowWidth()
+    set  WINDOW_H = DzGetWindowHeight()
+    set  WINDOW_X = DzGetWindowX()
+    set  WINDOW_Y = DzGetWindowY()
+endfunction
+
+//鼠标滚轮回调
+private function wheel_callback takes nothing returns nothing
+    set LastWheelDelta = DzGetWheelDelta()
+    //call BJDebugMsg("鼠标滚动"+I2S(LastWheelDelta))
+endfunction
+
+private function init takes nothing returns nothing
+    //判断打字
+    set  istype = false
+    call type_Event()
+
+    //winodw
+    call window_callback()
+    call DzTriggerRegisterWindowResizeEventByCode( null, false, function window_callback)
+
+    //鼠标滚轮
+    set LastWheelDelta = 0
+    call DzTriggerRegisterMouseWheelEventByCode( null, false, function wheel_callback)
+endfunction
+
+endlibrary

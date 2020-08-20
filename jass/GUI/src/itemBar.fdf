@@ -1,0 +1,76 @@
+IncludeFile "ui\template.fdf",
+
+
+//物品cd文本
+Frame "TEXT" "ItemBarItemTextCooldown"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYCENTER,
+    FontJustificationV JUSTIFYMIDDLE, 
+    
+    FontColor 0.8 0.8 0.8 0.8,
+    FrameFont "ui\ui.ttf", 0.01, "",
+}
+
+//物品使用次数
+Frame "TEXT" "ItemBarItemTextUse"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYCENTER,
+    FontJustificationV JUSTIFYMIDDLE, 
+    
+    FontColor 0.9 0.9 0.75 0.9,
+    FrameFont "ui\ui.ttf", 0.010, "",
+}
+//物品描使用次数-背景
+Frame "BACKDROP" "ItemTooltipBackdropUse" INHERITS "BackdropWithBorderTemplate"
+{
+    BackdropBackgroundSize  0.01,
+    BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
+    BackdropCornerSize  0.008,
+    BackdropBackgroundInsets 0.001 0.001 0.001 0.001,
+}
+
+//物品描述边框
+Frame "BACKDROP" "ItemTooltipBackdrop" INHERITS "BackdropWithBorderTemplate"
+{
+}
+
+//物品描述--名字
+Frame "TEXT" "ItemTooltipTextName"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    
+    FontColor 1.0 1.0 1.0 1.0,
+    FrameFont "ui\ui.ttf", 0.012, "",
+}
+
+
+//物品描述--基础描述
+Frame "TEXT" "ItemTooltipTextDes"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    
+    FontColor 1.0 1.0 1.0 0.9,
+    FrameFont "ui\ui.ttf", 0.011, "",
+}
+
+//物品描述--动态基础描述
+Frame "TEXT" "ItemTooltipTextActiveDes"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    
+    FontColor 1.0 1.0 1.0 0.9,
+    FrameFont "ui\ui.ttf", 0.010, "",
+}
+
+//物品描述--提示
+Frame "TEXT" "ItemTooltipTextTip"  INHERITS "TextNoEventTemplate"
+{
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    
+    FontColor 0.5 0.5 0.5 0.8,
+    FrameFont "ui\ui.ttf", 0.0096, "",
+}

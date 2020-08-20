@@ -1,0 +1,50 @@
+
+IncludeFile "UI\template.fdf",
+
+
+//鼠标描述
+Frame "BACKDROP" "TooltipBackrop" {
+    	BackdropTileBackground,
+    	BackdropBackground "ui\ButtonTooltip_Backdrop.blp",
+    	BackdropBackgroundSize  0.02,
+    	BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
+    	BackdropCornerSize  0.012,
+    	BackdropBackgroundInsets 0.003 0.003 0.003 0.003,
+    	BackdropEdgeFile  "ui\ButtonTooltip_Border.blp",
+   	    BackdropBlendAll,
+}
+//鼠标描述-HeadText
+Frame "TEXT" "TooltipHeadText" INHERITS "TextNoEventTemplate" {
+    FrameFont "EscMenuTextFont", 0.012, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    FontColor 1.0 1.0 1.0 1.0,
+    FontShadowOffset 0.001 -0.001,
+    FontShadowColor 0.2 0.2 0.2 0.1,
+    FontFlags "FIXEDSIZE",
+    LayerStyle "IGNORETRACKEVENTS",	
+}
+
+//鼠标描述-ValueText
+Frame "TEXT" "TooltipTipText" INHERITS "TextNoEventTemplate" {
+    FrameFont "ui\ui.ttf", 0.01, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    FontColor 1.0 1.0 1.0 0.9,
+    FontShadowOffset 0.001 -0.001,
+    FontShadowColor 0.2 0.2 0.2 0.1,
+    FontFlags "FIXEDSIZE",
+    LayerStyle "IGNORETRACKEVENTS",	
+}
+
+//鼠标描述-TipC
+Frame "TEXT" "TooltipTipC" INHERITS "TextNoEventTemplate" {
+    FrameFont "ui\ui.ttf", 0.01, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    FontColor 0.5 0.5 0.5 0.9,
+    FontShadowOffset 0.001 -0.001,
+    FontShadowColor 0.2 0.2 0.2 0.1,
+    FontFlags "FIXEDSIZE",
+    LayerStyle "IGNORETRACKEVENTS",	
+}

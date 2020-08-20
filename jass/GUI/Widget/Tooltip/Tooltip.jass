@@ -1,0 +1,158 @@
+library Tooltip initializer init requires UIBase
+globals
+    private integer name    //名字
+    private integer icon //图标
+    private integer tipA 
+    private integer tipB 
+    private integer tipC //灰色提示文字
+
+    private integer backdrop    //背景
+    private hashtable HT    //储存文本信息
+    private boolean FLAG    //全局控制
+endglobals
+
+private function init takes nothing returns nothing
+    set HT = InitHashtable()
+    set FLAG = false
+endfunction
+
+
+private function Display takes nothing returns nothing
+    local integer frame = DzGetTriggerUIEventFrame()
+    local string str
+    if(not FLAG or not LoadBoolean(HT,frame,0)) then
+        return
+    endif
+    call DzFrameSetText( name, LoadStr(HT,frame,DATA_NAME) )
+    //图标
+    set str = LoadStr(HT,frame, DATA_ART)
+    if str == null or str == "" then
+        //没有图标，则名字锚点左移
+        call DzFrameSetPoint(name, 3, icon, 3, 0, 0.002)
+        call DzFrameShow(icon, false)
+    else
+        call DzFrameSetPoint(name, 3, icon, 5, 0, 0.002)
+        call DzFrameShow(icon, true)
+    endif
+    call DzFrameSetText( tipA, LoadStr(HT,frame, DATA_TOOLTIP_A) )
+    call DzFrameSetText( tipB, LoadStr(HT,frame, DATA_TOOLTIP_B) )
+    call DzFrameSetText( tipC, LoadStr(HT,frame, DATA_TOOLTIP_C) )
+ 
+    call DzFrameClearAllPoints(tipC)
+    call DzFrameSetPoint(tipC, 6, frame, 4, LoadReal(HT, frame, 8), LoadReal(HT, frame, 9))
+    call DzFrameShow( backdrop, true )
+endfunction
+
+private function Hide takes nothing returns nothing
+    if not FLAG then
+        return
+    endif
+    call DzFrameShow(backdrop, false )
+endfunction
+
+
+//初始化鼠标描述
+function TooltipInit takes nothing returns nothing
+    local real w = 0.24
+    local real padding_tb = 0.008
+    local real padding_lr = 0.01
+    local real textW = w - 2* padding_tb //0.184
+    local real iconW = 0.024
+    local integer fa
+    
+
+    //背景
+    set backdrop = DzCreateFrameByTagName("BACKDROP", "TooltipBackdrop" , GAME_UI, "TooltipBackrop", 0)
+    call DzFrameSetSize(backdrop, w, 0.)
+    call DzFrameShow( backdrop, false )
+
+    //提示
+    set tipC = DzCreateFrameByTagName("TEXT", "TooltipTextTipC" , backdrop ,"TooltipTipC" ,0)
+    call DzFrameSetSize(tipC, textW, 0)
+    call DzFrameSetText(tipC, "长时间使用该技能会消耗更多额魔法值")
+    //call DzFrameSetAbsolutePoint(tipC, 6, 0.4, 0.3)
+     
+     //分界线
+    set fa = DzCreateFrameByTagName("BACKDROP","ToolTipHorizon" , backdrop,"BackdropTemplate" ,0)
+    call DzFrameSetTexture(fa,"UI\\ToolTipHorizon.blp", 0)
+    call DzFrameSetSize(fa, w, 0.006)
+    call DzFrameSetPoint(fa, 6, tipC, 0, -padding_lr, 0.006)
+
+    //可变描述
+    set tipB = DzCreateFrameByTagName("TEXT","TooltipTextActiveDes" , backdrop ,"TooltipTipText" ,0)
+    call DzFrameSetSize(tipB, textW, 0)
+    call DzFrameSetPoint(tipB, 6,  tipC, 0, 0., 0.012 )
+    call DzFrameSetText(tipB, "该效果可以被驱散|n描述可变描述可变描述可变描述可变描述可变描述可变描述可变描述可变")
+
+    //基本描述
+    set tipA = DzCreateFrameByTagName("TEXT","TooltipTextDes" , backdrop, "TooltipTipText" ,0)
+    call DzFrameSetSize(tipA, textW, 0)
+    call DzFrameSetPoint(tipA, 6,  tipB, 0, 0., 0.01 )
+    call DzFrameSetText(tipA, "施放在具有远程攻击能力的敌方建筑物上使其丧失攻击力。|n持续12秒。")
+
+    //分界线
+    set fa = DzCreateFrameByTagName("BACKDROP","ToolTipHorizon" , backdrop,"BackdropTemplate" ,1)
+    call DzFrameSetTexture(fa,"UI\\ToolTipHorizon.blp", 0)
+    call DzFrameSetSize(fa, w, 0.006)
+    call DzFrameSetPoint(fa, 6, tipA, 0, -padding_lr, 0.006)
+
+    //图标
+    set icon = DzCreateFrameByTagName("BACKDROP", "TooltipIcon" , backdrop, "BackdropTemplate", 0)
+    call DzFrameSetSize(icon, 0.024, 0.018)
+    call DzFrameSetPoint(icon, 6, tipA, 0, 0, 0.012)
+    //call DzFrameSetTexture(icon, "ReplaceableTextures\\PassiveButtons\\PASBTNFrost.blp", 0)
+    //call DzFrameShow( icon, false )
+
+    //名字
+    set name = DzCreateFrameByTagName("TEXT","TooltipTextName" , backdrop ,"TooltipHeadText" ,0)
+    call DzFrameSetSize(name,textW - iconW, 0)
+    call DzFrameSetText(name, "致命一击")
+    call DzFrameSetPoint(name, 3, icon, 5, 0, 0.002)
+
+    
+    //背景锚点 
+    call DzFrameSetPoint(backdrop, 0, icon, 0, -padding_lr, padding_tb )
+    call DzFrameSetPoint( backdrop, 6, tipC, 6, -padding_lr, -padding_tb )
+
+    set FLAG = true
+endfunction
+
+//注册按钮鼠标描述
+function RigesterTooltip takes integer but returns nothing
+    call DzFrameSetScriptByCode( but, 2, function Display, false )
+    call DzFrameSetScriptByCode( but, 3, function Hide, false )
+    call SaveBoolean(HT,but,0,true)
+endfunction
+
+//设置按钮描述信息
+function TooltipSetInfo takes integer but, integer info_index,string str returns nothing
+    call SaveStr(HT, but, info_index, str)
+endfunction
+
+//清除信息
+function TooltipClearInfo takes integer but returns nothing
+    call FlushChildHashtable(HT, but)
+endfunction
+
+//设置显示偏移
+function TooltipSetOffset takes integer but, real x,real y returns nothing
+    call SaveReal(HT, but, 8, x)
+    call SaveReal(HT, but, 9, y)
+endfunction
+
+//禁用启用
+function EnableTooltip takes integer but,boolean mode  returns nothing
+    call SaveBoolean(HT,but,0,mode)
+endfunction
+
+endlibrary
+
+<?
+#ifdef IMPORT_SRC
+    #ifndef IMPORT_TOOLTIP_SRC
+        #define IMPORT_TOOLTIP_SRC
+        #include "src\import.lua"
+    #endif
+
+#endif
+?>

@@ -1,0 +1,250 @@
+IncludeFile "ui\template.fdf",
+
+
+//屏幕商店背景
+Frame "BACKDROP" "ShopBackdrop" {
+    	BackdropTileBackground,
+    	BackdropBackground "ui\Shop_Backdrop.blp",
+    	BackdropBackgroundSize  0.02,
+    	BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
+    	BackdropCornerSize  0.016,
+    	BackdropBackgroundInsets 0.005 0.003 0.005 0.005,
+    	BackdropEdgeFile  "ui\Shop_Border.blp",
+   	    BackdropBlendAll,
+}
+
+//屏幕商店分类按钮-推荐
+Frame "GLUETEXTBUTTON" "ShopGuideButton" {
+
+    ControlStyle "AUTOTRACK|HIGHLIGHTONMOUSEOVER",
+
+    ControlBackdrop "ButtonBackdropTemplate",
+    Frame "BACKDROP" "ButtonBackdropTemplate"{
+	BackdropBackground  "ui\alphatexture.blp",
+	BackdropEdgeFile  "ui\alphatexture.blp",
+	BackdropBlendAll,
+    }
+    
+    ControlPushedBackdrop "ButtonPushedBackdropTemplate",
+    Frame "BACKDROP" "ButtonPushedBackdropTemplate"  {
+	BackdropBackground  "ui\alphatexture.blp",
+	BackdropEdgeFile  "ui\alphatexture.blp",
+	BackdropBlendAll,
+    }
+    ControlMouseOverHighlight "ButtonMouseOverHighlightTemplate",
+    Frame "HIGHLIGHT" "ButtonMouseOverHighlightTemplate" {
+	HighlightType "FILETEXTURE",
+	HighlightAlphaFile "ui\Shop_GuideButton_Highlightling.blp",       
+    	HighlightAlphaMode "ADD",
+  
+    }
+}
+
+
+//商店鼠标描述
+Frame "BACKDROP" "ShopItemTooltipBackdrop" {
+    	BackdropTileBackground,
+    	BackdropBackground "ui\ButtonTooltip_Backdrop.blp",
+    	BackdropBackgroundSize  0.02,
+    	BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
+    	BackdropCornerSize  0.012,
+    	BackdropBackgroundInsets 0.003 0.003 0.003 0.003,
+    	BackdropEdgeFile  "ui\ButtonTooltip_Border.blp",
+   	    BackdropBlendAll,
+}
+//物品鼠标描述-name
+Frame "TEXT" "ShopItemTooltipNameText" {
+    FrameFont "ui\ui.ttf", 0.012, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    FontColor 1.0 1.0 1.0 1.0,
+    FontShadowOffset 0.001 -0.001,
+    FontShadowColor 0.2 0.2 0.2 0.1,
+    FontFlags "FIXEDSIZE",
+    LayerStyle "IGNORETRACKEVENTS",	
+}
+//物品鼠标描述-Des
+Frame "TEXT" "ShopItemTooltipTextDes" {
+    FrameFont "ui\ui.ttf", 0.0112, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    FontColor 1.0 1.0 1.0 0.9,
+    FontShadowOffset 0.001 -0.001,
+    FontShadowColor 0.2 0.2 0.2 0.1,
+    FontFlags "FIXEDSIZE",
+    LayerStyle "IGNORETRACKEVENTS",	
+}
+//物品鼠标描述-Tip
+Frame "TEXT" "ShopItemTooltipTextTip" {
+    FrameFont "ui\ui.ttf", 0.01, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    FontColor 0.8 0.8 0.8 0.9,
+    FontShadowOffset 0.001 -0.001,
+    FontShadowColor 0.2 0.2 0.2 0.1,
+    FontFlags "FIXEDSIZE",
+    LayerStyle "IGNORETRACKEVENTS",	
+}
+//物品鼠标描述-金币
+Frame "TEXT" "ShopItemTooltipGoldText" {
+    FrameFont "ui\ui.ttf", 0.01, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+     FontColor 1.0 1.0 0.255 1.0,
+    FontShadowOffset 0.001 -0.001,
+    FontFlags "FIXEDSIZE",
+    LayerStyle "IGNORETRACKEVENTS",	
+}
+//屏幕商店-装备栏装备按钮
+Frame "BUTTON" "ShopItemBarButton" {
+    ControlStyle "AUTOTRACK|HIGHLIGHTONMOUSEOVER",
+
+    ControlBackdrop "ButtonBackdropTemplate",
+    Frame "BACKDROP" "ButtonBackdropTemplate"{
+	BackdropBackground  "ui\alphatexture.blp",
+	BackdropEdgeFile  "ui\alphatexture.blp",
+	BackdropBlendAll,
+    }
+    
+    ControlPushedBackdrop "ButtonPushedBackdropTemplate",
+    Frame "BACKDROP" "ButtonPushedBackdropTemplate"  {
+	BackdropBackground  "ui\alphatexture.blp",
+	BackdropEdgeFile  "ui\alphatexture.blp",
+	BackdropBlendAll,
+    }
+    ControlMouseOverHighlight "ButtonMouseOverHighlightTemplate",
+    Frame "HIGHLIGHT" "ButtonMouseOverHighlightTemplate" {
+	HighlightType "FILETEXTURE",
+	HighlightAlphaFile "ui\alphatexture.blp",       
+    	HighlightAlphaMode "ADD",
+  
+    }
+}
+//屏幕商店-功能按钮
+Frame "GLUETEXTBUTTON" "ShopFunctionButton" {
+
+    ControlStyle "AUTOTRACK|HIGHLIGHTONMOUSEOVER",
+
+    ControlBackdrop "ButtonBackdropTemplate",
+    Frame "BACKDROP" "ButtonBackdropTemplate"{
+	BackdropBackground  "ui\alphatexture.blp",
+	BackdropEdgeFile  "ui\alphatexture.blp",
+	BackdropBlendAll,
+    }
+    
+    ControlPushedBackdrop "ButtonPushedBackdropTemplate",
+    Frame "BACKDROP" "ButtonPushedBackdropTemplate"  {
+	BackdropBackground  "ui\alphatexture.blp",
+	BackdropEdgeFile  "ui\alphatexture.blp",
+	BackdropBlendAll,
+    }
+    ControlMouseOverHighlight "ButtonMouseOverHighlightTemplate",
+    Frame "HIGHLIGHT" "ButtonMouseOverHighlightTemplate" {
+	HighlightType "FILETEXTURE",
+	HighlightAlphaFile "ui\Shop_FunctionButton_Highlight.blp",       
+    	HighlightAlphaMode "ADD",
+  
+    }
+}
+//屏幕商店-商品按钮
+Frame "BUTTON" "ShopItemButton" {
+    ControlStyle "AUTOTRACK|HIGHLIGHTONMOUSEOVER",
+
+    ControlBackdrop "ButtonBackdropTemplate",
+    Frame "BACKDROP" "ButtonBackdropTemplate"{
+	BackdropBackground  "ui\alphatexture.blp",
+	BackdropEdgeFile  "ui\alphatexture.blp",
+	BackdropBlendAll,
+    }
+    
+    ControlPushedBackdrop "ButtonPushedBackdropTemplate",
+    Frame "BACKDROP" "ButtonPushedBackdropTemplate"  {
+	BackdropBackground  "ui\alphatexture.blp",
+	BackdropEdgeFile  "ui\alphatexture.blp",
+	BackdropBlendAll,
+    }
+    ControlMouseOverHighlight "ButtonMouseOverHighlightTemplate",
+    Frame "HIGHLIGHT" "ButtonMouseOverHighlightTemplate" {
+	HighlightType "FILETEXTURE",
+	HighlightAlphaFile "ui\alphatexture.blp",       
+    	HighlightAlphaMode "ADD",
+  
+    }
+}
+//屏幕商店-商品名字
+Frame "TEXT" "ShopItemName" {
+    FrameFont "ui\ui.ttf", 0.0132, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    FontColor 1.0 1.0 1.0 1.0,
+    FontShadowOffset 0.001 -0.001,
+    FontShadowColor 0.2 0.2 0.2 0.1,
+    FontFlags "FIXEDSIZE",
+    LayerStyle "IGNORETRACKEVENTS",	
+}
+//屏幕商店-金币价格
+Frame "TEXT" "ShopGoldText" {
+    FrameFont "ui\ui.ttf", 0.01, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+     FontColor 1.0 1.0 0.255 1.0,
+    FontShadowOffset 0.001 -0.001,
+    FontFlags "FIXEDSIZE",
+    LayerStyle "IGNORETRACKEVENTS",	
+}
+Frame "TEXT" "ShopItemTip" {
+    FrameFont "ui\ui.ttf", 0.0112, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    FontColor 0.8 0.8 0.8 0.9,
+    FontShadowOffset 0.001 -0.001,
+    FontShadowColor 0.2 0.2 0.2 0.1,
+    FontFlags "FIXEDSIZE",
+    LayerStyle "IGNORETRACKEVENTS",	
+}
+Frame "TEXT" "ShopItemDes" {
+    FrameFont "ui\ui.ttf", 0.0116, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+    FontColor 1.0 1.0 1.0 1.0,
+    FontShadowOffset 0.001 -0.001,
+    FontShadowColor 0.2 0.2 0.2 0.1,
+    FontFlags "FIXEDSIZE",
+    LayerStyle "IGNORETRACKEVENTS",	
+}
+//屏幕商店-材料价格
+Frame "TEXT" "ShopChildrenGoldCost" {
+    FrameFont "ui\ui.ttf", 0.008, "",
+    FontJustificationH JUSTIFYLEFT,
+    FontJustificationV JUSTIFYMIDDLE, 
+     FontColor 1.0 1.0 0.255 0.8,
+    FontShadowOffset 0.001 -0.001,
+    FontFlags "FIXEDSIZE",
+    LayerStyle "IGNORETRACKEVENTS",	
+}
+//屏幕商店-开关
+Frame "GLUETEXTBUTTON" "ShopSwitcher" {
+
+    ControlStyle "AUTOTRACK|HIGHLIGHTONMOUSEOVER",
+
+    ControlBackdrop "ButtonBackdropTemplate",
+    Frame "BACKDROP" "ButtonBackdropTemplate"{
+	BackdropBackground  "ui\SS_SwitcherIcon.blp",
+	BackdropEdgeFile  "ui\alphatexture.blp",
+	BackdropBlendAll,
+    }
+    
+    ControlPushedBackdrop "ButtonPushedBackdropTemplate",
+    Frame "BACKDROP" "ButtonPushedBackdropTemplate"  {
+	BackdropBackground  "ui\SS_SwitcherIcon.blp",
+	BackdropEdgeFile  "ui\alphatexture.blp",
+	BackdropBlendAll,
+    }
+    ControlMouseOverHighlight "ButtonMouseOverHighlightTemplate",
+    Frame "HIGHLIGHT" "ButtonMouseOverHighlightTemplate" {
+	HighlightType "FILETEXTURE",
+	HighlightAlphaFile "ui\SS_SwitcherIcon_Highlight.blp",       
+    	HighlightAlphaMode "ADD",
+  
+    }
+}

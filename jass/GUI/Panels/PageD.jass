@@ -1,0 +1,9 @@
+globals
+    private constant integer PageD = 0x4
+endglobals
+
+
+//首冲礼包
+private function CreateMainPanelPageD takes nothing returns nothing
+
+endfunction

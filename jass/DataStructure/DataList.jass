@@ -1,0 +1,206 @@
+library DataList initializer init requires LeeDvanBase
+
+globals
+    private hashtable array Info_List
+    private integer Info_ID
+endglobals
+
+
+//移除数据项
+//  list_id: 数据列表句柄
+//  item_id:信息项句柄
+function  DataListRemoveItem takes integer list_id, integer item_id returns nothing
+    local hashtable info = Info_List[list_id]
+    local integer num
+    local integer pos
+    local integer tmp
+    local integer i 
+
+    if(info == null)    then
+        return
+    endif
+
+    
+    set pos = LoadInteger(info, item_id, 0)    //序号
+    if pos <= 0   then
+        set info = null
+        return
+    endif
+    set num = LoadInteger(info, 0, 0)   //当前信息集数量
+
+    
+    //call FlushChildHashtable(info, index)
+
+    set i = pos
+    loop
+        exitwhen i >= num
+        set tmp = LoadInteger(info, 0, i + 1)   //下一个位置数据项句柄
+        call SaveInteger(info, 0, i, tmp)   //顺序队列更新
+        call SaveInteger(info, tmp, 0, i)  //数据项序号更新
+      
+        set i = i + 1
+    endloop
+
+    //移除插入项
+    call SaveInteger(info, item_id, 0, 0)  //序号
+
+    call SaveInteger(info, 0, 0, num - 1)
+
+    set info = null
+endfunction
+
+
+//插入数据项
+// table_index: table索引
+//  item_id:信息项句柄
+//  pos:插入位置, 负数则从后往前数, 不合法位置则插入到末尾,插入后，新插入的项成在pos位置
+function  DataListInsertItem takes integer list_id, integer item_id, integer pos returns nothing
+    local hashtable info = Info_List[list_id]
+    local integer num
+    local integer i 
+    local integer tmp
+
+    if(info == null)    then
+        return
+    endif
+
+    set tmp = LoadInteger(info, item_id, 0)
+    if tmp > 0  then    //已经插入，则先移除
+        call DataListRemoveItem(list_id, item_id)
+    endif
+
+    set num = LoadInteger(info, 0, 0)   //当前信息项数量
+    if pos == 0 then
+        set pos = num
+    elseif pos < 0 then 
+        set pos = num + pos + 1
+    elseif pos > num    then
+        set pos = num
+    endif
+
+    set i = num
+    loop
+        exitwhen i <= pos
+        set tmp = LoadInteger(info, 0, i)   //该位置信息项句柄
+
+        call SaveInteger(info, 0, i +1, tmp)    //显示序号队列
+        call SaveInteger(info, tmp, 0, i + 1)   //项目序号更新
+
+        set i = i - 1
+    endloop
+
+    //插入项
+    call SaveInteger(info, item_id, 0, pos + 1)  //储存序号
+    call SaveInteger(info, 0, pos + 1, item_id)  //显示队列储存句柄
+    call SaveInteger(info, 0, 0, num + 1)
+
+    //debug call MSG("插入数据项,id=" + I2S(item_id) + "位置=" + I2S(pos + 1))
+
+    set info = null
+endfunction
+
+
+//新建数据项
+//  list_id:数据列表id
+// inser_pos:插入位置
+//  @返回信息项的handle
+function DataListCreateItem takes integer list_id , integer insert_pos returns integer
+    local hashtable info = Info_List[list_id]  //信息项哈希表
+    local integer id
+    local integer num
+    if info == null then
+        return 0
+    endif
+    set num = LoadInteger(info, 1, 0)   //创建过的数据项数量
+    set num = num + 1
+    call SaveInteger(info, 1, 0, num)
+    set id = 1 + num    //信息项句柄
+
+    //插入
+    call DataListInsertItem(list_id, id, insert_pos)
+
+    set info = null
+    return id
+endfunction
+
+
+//销毁数据项
+//  list_id:数据列表id
+// item_id:数据项
+function DataListDestroyItem takes integer list_id, integer item_id returns nothing
+    local hashtable info = Info_List[list_id]  //信息项哈希表
+    if info == null then
+        return 
+    endif
+    if LoadInteger(info, item_id, 0) > 0    then
+        call DataListRemoveItem(list_id, item_id)
+    endif
+    call FlushChildHashtable(info, item_id)
+
+    set info = null
+endfunction
+
+//创建数据列表
+//  @数据列表句柄
+function DataListCreate takes nothing returns integer
+    local integer i = 0
+    local integer id = -1
+    loop
+        if Info_List[i] == null then
+            set Info_List[i] = InitHashtable()
+            set id = i
+            //call MSG("DataList, 新建hashtable, 索引:" + I2S(id))
+            exitwhen true
+        else
+            set i = i +1
+        endif
+    endloop
+    if id >=0   then
+        set Info_ID = Info_ID + 1
+        set Info_List[Info_ID] = null
+    endif
+    //call MSG("创建DataList, 返回句柄:" + I2S(id))
+    return id
+endfunction
+
+
+//删除数据列表
+//  id:数据列表句柄
+function DataListDestroy takes integer id returns nothing
+    if Info_List[id] != null  then
+        call FlushParentHashtable(Info_List[id])
+        set Info_List[id] = null
+    endif
+endfunction
+
+
+//获取信息集哈希表
+function DataListGetTable takes integer list_id returns hashtable
+    return Info_List[list_id]
+endfunction
+
+//获取信息集哈希表索引
+function DataListGetTableIndex takes hashtable list returns integer
+    local integer i = 0
+    local integer id = -1
+    loop
+        if Info_List[i] == list then
+            set id = i
+            exitwhen true
+        else
+            set i = i +1
+        endif
+        exitwhen i > Info_ID
+    endloop
+
+    set list = null
+    return id
+endfunction
+
+private function init takes nothing returns nothing
+    set Info_List[0] = null
+    set Info_List[1] = null
+    set Info_ID = 0 
+endfunction
+
+endlibrary

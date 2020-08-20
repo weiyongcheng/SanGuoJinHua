@@ -1,0 +1,81 @@
+
+//Lua call Jass
+
+library LcJ initializer init requires PanelAbility, PanelTalent, PanelAbilitySelector
+globals
+    hashtable LcJ   //参数表
+    private integer p   //参数指针
+    private integer call_index //调用函数索引
+endglobals
+
+//flush
+private function flushArg takes nothing returns nothing
+    set p = 0
+    call FlushChildHashtable(LcJ, 1)
+endfunction
+
+private function flushRet takes nothing returns nothing
+    call FlushChildHashtable(LcJ, 2)
+endfunction
+#define flushRet() FlushChildHashtable(LcJ, 2)
+
+//检测异步调用
+private function test takes nothing returns boolean
+    call flushRet()
+    set p = 0   //指针
+    if GetLocalPlayer() != Player(LoadInteger(LcJ, 0, 0))  then
+        return false
+    endif
+    set call_index = LoadInteger(LcJ, 0, 1)
+    return true
+endfunction
+
+//pop   提取函数参数
+private function popInt takes nothing returns integer
+    set p = p + 1
+    return LoadInteger(LcJ, 1, p)
+endfunction
+private function popB takes nothing  returns boolean
+    set p = p + 1
+    return LoadBoolean(LcJ, 1, p)
+endfunction
+private function popReal takes nothing  returns real
+    set p = p + 1
+    return LoadReal(LcJ, 1, p)
+endfunction
+private function popStr takes nothing  returns string
+    set p = p + 1
+    return LoadStr(LcJ, 1, p)
+endfunction
+private function popUnit takes nothing  returns unit
+    set p = p + 1
+    return LoadUnitHandle(LcJ, 1, p)
+endfunction
+
+//push  返回值
+private function pushInt takes integer value returns nothing
+    call  SaveInteger(LcJ, 2, 0, value)
+endfunction
+private function pushB takes boolean value returns nothing
+    call  SaveBoolean(LcJ, 2, 0, value)
+endfunction
+private function pushReal takes real value returns nothing
+    call  SaveReal(LcJ, 2, 0, value)
+endfunction
+
+#include "API\TableViewAPI.jass"
+
+#include "API\Panels.jass"
+
+
+private function init takes nothing returns nothing
+    set LcJ = InitHashtable()
+    set p = 0
+    
+    //初始化调用
+    call TableViewAPI()
+    call PanelsUI()
+    
+endfunction
+
+endlibrary

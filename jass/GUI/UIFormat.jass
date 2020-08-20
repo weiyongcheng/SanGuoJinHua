@@ -1,0 +1,19 @@
+library UIFormat requires PanelAbility, PanelSwitch
+
+
+
+function UIFormat takes nothing returns nothing
+    //技能面板
+    call PanelAbilityInit()
+    //天赋面板
+    call PanelTalentInit()
+    //背包面板
+
+    //技能选择面板
+    call PanelAbilitySelectorInit()
+
+    //开关集合
+    call PanelSwitchInit()
+endfunction
+
+endlibrary

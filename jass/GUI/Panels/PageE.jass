@@ -1,0 +1,9 @@
+
+globals
+    private constant integer PageE = 0x5
+endglobals
+
+//充值返利
+private function CreateMainPanelPageE takes nothing returns nothing
+
+endfunction
